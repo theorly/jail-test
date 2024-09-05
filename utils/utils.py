@@ -3,8 +3,8 @@ import streamlit as st
 import logging
 
 #model_list_url = "http://localhost:11434/api/tags"
-#model_list_url = "http://4.232.75.60:11434/api/tags"
-model_list_url = "http://4.232.75.60/api/tags"
+model_list_url = "http://4.232.75.60:11434/api/tags"
+#model_list_url = "http://4.232.75.60/api/tags"
 
 # Funzione per ottenere la lista dei modelli disponibili
 def get_models():
@@ -22,8 +22,8 @@ def get_models():
 # Funzione per inviare il prompt e ottenere la risposta
 def get_response(model, chat_history, options):
     #url = f'http://localhost:11434/api/chat'
-    #url = f'http://4.232.75.60:11434/api/chat'
-    url = f'http://4.232.75.60/api/chat'
+    url = f'http://4.232.75.60:11434/api/chat'
+    #url = f'http://4.232.75.60/api/chat'
     payload = {'model' : model, 'messages': chat_history , "options" : options, "stream": False}
     headers = {'Content-Type': 'application/json'}
     response = requests.post(url, headers=headers, json=payload)
