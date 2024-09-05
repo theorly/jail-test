@@ -2,3 +2,10 @@ anthropic
 streamlit
 python-dotenv
 google-generativeai
+pandas 
+streamlit-option-menu 
+streamlit-card
+numpy
+streamlit-lottie
+transformers
+tokenizers 

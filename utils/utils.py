@@ -50,7 +50,6 @@ def reset_model():
         "top_k": 64,
         "max_output_tokens" : 8192}
 
-
 @st.dialog("Change LLM parameters")
 def change_options(): 
     with st.container():
@@ -71,7 +70,7 @@ def change_options():
                         st.write("PARAMETERS UPDATED:\n" ,"temperature",  st.session_state.options["temperature"], "top_k", st.session_state.options["top_k"], "top_p", 
                                 st.session_state.options["top_p"], "max_output_tokens", st.session_state.options["max_output_tokens"])
                         logging.debug(f"options updated: {st.session_state.options}")
-                        
+                       
 
 @st.dialog("Insert a system prompt")
 def prompt_system():
@@ -84,5 +83,5 @@ def prompt_system():
                     st.session_state.messages.append({"role": "assistant", "content": get_response(st.session_state.selected_model, st.session_state.messages, st.session_state.options)})
                     logging.debug(f"system prompt: {system_prompt}")
                     logging.debug(f"messages: {st.session_state.messages}")
-                    st.rerun()
+                    #st.rerun()
 

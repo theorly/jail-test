@@ -44,18 +44,6 @@ def system_prompt_claude():
                     st.rerun()
 
 
-
-col1, col2 = st.columns([1, 1]) 
-with col1: 
-    manage_option = st.button("Change LLM parameters")
-    if manage_option:
-        utils.change_options()
-        st.write("Modifica i parametri del modello")
-with col2: 
-    system_prompt = st.button("Insert a system prompt")
-    if system_prompt:
-        system_prompt_claude()
-
 st.divider()
 
 # Initialize chat history
@@ -89,21 +77,29 @@ chat_history_json = json.dumps(st.session_state.messages, indent=4)
 
 
 st.divider()
-col1, col2 = st.columns([1, 1])  # Due colonne di larghezza uguale
+st.divider()
+col1, col2, col3, col4 = st.columns([1, 1, 1, 1])  # Due colonne di larghezza uguale
 with col1:
+    settings = st.button(":material/settings: Settings")  
+    if settings:
+        utils.change_options()
+        st.write("Modifica i parametri del modello")
+            
+with col2: 
+     system_prompt = st.button(":material/point_of_sale: System Prompt") 
+     if system_prompt:
+                system_prompt_claude()   
+
+with col3:
                st.download_button(
-                label="Export chat",
+                label=":material/download: Download",
                 data=chat_history_json,
                 file_name='chat_history.json',
                 mime='application/json'
             )
-with col2:
-            if st.button("Reset model"):
+with col4:
+            if st.button(":material/frame_reload: Reset"):
                 utils.reset_model()
-
-
-
-
 
 
 
