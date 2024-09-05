@@ -9,14 +9,10 @@ from openai import OpenAI
 load_dotenv()
 
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
-#OPENAI_API_KEY = "YOUR_API_KEY"
 
 def gpt_response():
-    client = OpenAI(
-        api = OPENAI_API_KEY
-    )
+    client = OpenAI(OPENAI_API_KEY)
     
-         
     response = client.chat.completions.create(
         model = "gpt-3.5-turbo",
         messages = st.session_state.messages,
