@@ -11,7 +11,7 @@ load_dotenv()
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 
 def gpt_response():
-    client = OpenAI(OPENAI_API_KEY)
+    client = OpenAI()
     
     response = client.chat.completions.create(
         model = "gpt-3.5-turbo",

@@ -10,3 +10,4 @@ streamlit-lottie
 transformers
 tokenizers 
 openai
+openpyxl

@@ -3,6 +3,8 @@ from streamlit_card import card
 
 st.subheader("Info page")
 
+st.text("Made by Orlando De Bernardis, student at Alma Mater Studiorum - University of Bologna. \n")
+st.divider()
 col1,col2,col3 = st.columns(3)
 with col1:
     hasClicked = card(

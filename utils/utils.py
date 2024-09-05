@@ -1,6 +1,8 @@
 import requests
 import streamlit as st
 import logging
+import os
+import pandas as pd
 
 #model_list_url = "http://localhost:11434/api/tags"
 model_list_url = "http://4.232.75.60:11434/api/tags"
@@ -85,3 +87,18 @@ def prompt_system():
                     logging.debug(f"messages: {st.session_state.messages}")
                     #st.rerun()
 
+
+def file_to_dataframe(file_path):
+    # Controlla l'estensione del file
+    _, file_extension = os.path.splitext(file_path)
+    
+    if file_extension.lower() == '.xlsx':
+        # Legge il file Excel e crea un DataFrame
+        df = pd.read_excel(file_path, engine='openpyxl', index_col=0)
+    elif file_extension.lower() == '.csv':
+        # Legge il file CSV e crea un DataFrame
+        df = pd.read_csv(file_path, index_col=0)
+    else:
+        raise ValueError("Unsupported file format: {}".format(file_extension))
+    
+    return df
