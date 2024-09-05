@@ -9,3 +9,4 @@ numpy
 streamlit-lottie
 transformers
 tokenizers 
+openai

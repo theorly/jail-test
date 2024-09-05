@@ -8,8 +8,8 @@ from openai import OpenAI
 
 load_dotenv()
 
-#OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
-OPENAI_API_KEY = "YOUR_API_KEY"
+OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
+#OPENAI_API_KEY = "YOUR_API_KEY"
 
 def gpt_response():
     client = OpenAI(
