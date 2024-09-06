@@ -3,7 +3,7 @@
  Thesis project for studying the Jailbreak of LLMs. 
 **This is a tool in development yet, so many more features have to be added.**  
 
-**  href="[Jailbreak-GPT](https://jailbreak-gpt.azurewebsites.net/)" ** 
+**"[Jailbreak-GPT](https://jailbreak-gpt.azurewebsites.net/)"** 
 
 # LLM now supported: 
 - GPT-3.5-turbo
