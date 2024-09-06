@@ -4,8 +4,7 @@
 **This is a tool in development yet, so many more features have to be added.**  
 
 **[Jailbreak-GPT](https://jailbreak-gpt.azurewebsites.net/)** 
-<a align="center" href="[Jailbreak-GPT](https://jailbreak-gpt.azurewebsites.net/)">
-</a>
+
 
 # LLM now supported: 
 - GPT-3.5-turbo
