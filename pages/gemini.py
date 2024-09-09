@@ -1,5 +1,6 @@
 import streamlit as st  
 import google.generativeai as genai
+from google.generativeai.types import HarmCategory, HarmBlockThreshold
 from utils import utils
 import json
 import logging
@@ -33,7 +34,13 @@ if "system_instruction" not in st.session_state:
 def gemini_response(): 
     model = genai.GenerativeModel(model_name="gemini-1.5-flash", 
                     generation_config= st.session_state.options,
-                    system_instruction= st.session_state.system_instruction
+                    system_instruction= st.session_state.system_instruction,
+                    safety_settings={ 
+                          HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,
+                          HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,
+                          HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_NONE,
+                          HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_NONE,
+                    }
                 )
          
     chat = model.start_chat(history=[])
