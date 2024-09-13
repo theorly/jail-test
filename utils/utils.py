@@ -6,7 +6,7 @@ import pandas as pd
 
 #model_list_url = "http://localhost:11434/api/tags"
 #model_list_url = "http://4.232.75.60:11434/api/tags"
-model_list_url = "http://20.54.80.58/api/tags"
+model_list_url = "http://20.54.80.58:11434/api/tags"
 
 # Funzione per ottenere la lista dei modelli disponibili
 def get_models():
