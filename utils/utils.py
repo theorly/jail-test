@@ -85,7 +85,7 @@ def prompt_system():
                     st.session_state.messages.append({"role": "assistant", "content": get_response(st.session_state.selected_model, st.session_state.messages, st.session_state.options)})
                     logging.debug(f"system prompt: {system_prompt}")
                     logging.debug(f"messages: {st.session_state.messages}")
-                    #st.rerun()
+                    st.rerun()
 
 
 def file_to_dataframe(file_path):
