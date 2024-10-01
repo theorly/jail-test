@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 from openai import OpenAI
 
 load_dotenv()
+utils.reset_model()
 
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 
@@ -19,7 +20,6 @@ def gpt_response():
         temperature = st.session_state.options["temperature"],
         max_tokens = st.session_state.options["max_output_tokens"],
         top_p = st.session_state.options["top_p"],
-        top_k = st.session_state.options["top_k"]
     )
 
     return response.choices[0].message.content
@@ -31,7 +31,6 @@ if "messages" not in st.session_state:
 if "options" not in st.session_state:
     st.session_state.options = {"temperature": float(1.0),
         "top_p": float(0.95),
-        "top_k": int(64),
         "max_output_tokens" : int(8192)}
 # Initialize system prompt
 if "system_instruction" not in st.session_state:

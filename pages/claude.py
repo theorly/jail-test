@@ -7,6 +7,7 @@ import json
 from dotenv import load_dotenv
 
 load_dotenv()
+utils.reset_model()
 
 st.subheader(f"Chat with Claude!")
 
@@ -20,7 +21,7 @@ def claude_response():
                     model="claude-3-5-sonnet-20240620",
                     temperature= st.session_state.options['temperature'],
                     top_p= st.session_state.options['top_p'],
-                    top_k= st.session_state.options['top_k'],
+                    #top_k= st.session_state.options['top_k'],
                     max_tokens= st.session_state.options['max_output_tokens'],
                     messages = st.session_state.messages
             )

@@ -8,6 +8,7 @@ import os
 from dotenv import load_dotenv
 
 load_dotenv()
+utils.reset_model()
 
 st.subheader("Chat with Google Gemini")
 
@@ -24,7 +25,7 @@ if "messages" not in st.session_state:
 if "options" not in st.session_state:
     st.session_state.options = {"temperature": float(1.0),
         "top_p": float(0.95),
-        "top_k": int(64),
+        #"top_k": int(64),
         "max_output_tokens" : int(8192)}
 # Initialize system prompt
 if "system_instruction" not in st.session_state:
@@ -43,9 +44,9 @@ def gemini_response():
                     }
                 )
          
-    chat = model.start_chat(history=[])
+    chat = model.start_chat(history=st.session_state.messages)
 
-    response = chat.send_message(st.session_state.messages[-1]['content']) 
+    response = chat.send_message(st.session_state.messages[-1]['parts']) 
 
     return response.text
 
@@ -57,9 +58,9 @@ def system_prompt_gemini():
                 gemini_system_prompt = st.text_area("Insert a system prompt")
                 submitted = st.form_submit_button("Submit")
                 if submitted:
-                    st.session_state.messages.append({"role": "system", "content": gemini_system_prompt})
+                    st.session_state.messages.append({"role": "user", "parts": gemini_system_prompt})
                     st.session_state.system_instruction = gemini_system_prompt
-                    st.session_state.messages.append({"role": "assistant", "content": gemini_response()})
+                    st.session_state.messages.append({"role": "model", "parts": gemini_response()})
                     logging.debug(f"system prompt: {gemini_system_prompt}")
                     logging.debug(f"messages: {st.session_state.messages}")
                     st.rerun()
@@ -69,17 +70,17 @@ st.divider()
 # Display chat messages from history on app rerun
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
-        st.markdown(message["content"])
+        st.markdown(message["parts"])
 
 if prompt := st.chat_input("Insert your prompt!"):
-            st.session_state.messages.append({"role": "user", "content": prompt})
+            st.session_state.messages.append({"role": "user", "parts": prompt})
             with st.chat_message("user"):
                 st.markdown(prompt)
             
             with st.chat_message("assistant"):
                 stream = gemini_response()
                 response = st.write(stream)
-            st.session_state.messages.append({"role": "assistant", "content": stream})
+            st.session_state.messages.append({"role": "model", "parts": stream})
      
 
         # Pulsante per scaricare la cronologia della chat come JSON

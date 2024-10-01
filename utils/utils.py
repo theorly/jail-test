@@ -5,7 +5,6 @@ import os
 import pandas as pd
 
 #model_list_url = "http://localhost:11434/api/tags"
-#model_list_url = "http://4.232.75.60:11434/api/tags"
 model_list_url = "http://20.54.80.58:11434/api/tags"
 
 # Funzione per ottenere la lista dei modelli disponibili
@@ -25,7 +24,6 @@ def get_models():
 def get_response(model, chat_history, options):
     #url = f'http://localhost:11434/api/chat'
     url = f'http://20.54.80.58:11434/api/chat'
-    #url = f'http://4.232.75.60/api/chat'
     payload = {'model' : model, 'messages': chat_history , "options" : options, "stream": False}
     headers = {'Content-Type': 'application/json'}
     response = requests.post(url, headers=headers, json=payload)
@@ -49,7 +47,7 @@ def reset_model():
     st.session_state.messages = []
     st.session_state.options = {"temperature": 0.8,
         "top_p": 0.9,
-        "top_k": 64,
+        #"top_k": 64,
         "max_output_tokens" : 8192}
 
 @st.dialog("Change LLM parameters")
@@ -61,13 +59,13 @@ def change_options():
                 with st.form("my_form"):
                     temp_slider = float(st.slider("Temperature", min_value=0.1, max_value=1.0, step=0.1, key="temperature", format="%f"))
                     top_p_slider = float(st.slider("Top P", min_value=0.1, max_value=1.0, step=0.1, key="top_p", format="%f"))
-                    top_k_slider = int(st.number_input("Top K",value = 64, min_value=1, max_value=100, step=1, key="top_k", format="%d"))
+                    #top_k_slider = int(st.number_input("Top K",value = 64, min_value=1, max_value=100, step=1, key="top_k", format="%d"))
                     max_output_slider = int(st.number_input("Max Output Tokens", value= 8192,min_value=1, max_value=8192, step=100, key="max_output_tokens", format="%d"))
                     submitted = st.form_submit_button("Make changes")
                     if submitted:
                         st.session_state.options["temperature"] = (temp_slider)
                         st.session_state.options["top_p"] = (top_p_slider)
-                        st.session_state.options["top_k"] = (top_k_slider)
+                        #st.session_state.options["top_k"] = (top_k_slider)
                         st.session_state.options["max_output_tokens"] = (max_output_slider)
                         st.write("PARAMETERS UPDATED:\n" ,"temperature",  st.session_state.options["temperature"], "top_k", st.session_state.options["top_k"], "top_p", 
                                 st.session_state.options["top_p"], "max_output_tokens", st.session_state.options["max_output_tokens"])
