@@ -35,7 +35,7 @@ def prompt_results(prompts):
     download_chat = []
     models = utils.get_models()
     st.write("Models:")
-    st.write(models + ["Google Gemini", "ChatGPT", "Claude"])
+    st.write(["Google Gemini", "ChatGPT", "Claude"] + models)
     st.write("Selected prompts:")
     prompts = prompts['text'].tolist()
     for prompt in prompts:
