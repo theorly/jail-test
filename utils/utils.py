@@ -59,7 +59,7 @@ def change_options():
                 with st.form("my_form"):
                     temp_slider = float(st.slider("Temperature", min_value=0.1, max_value=1.0, step=0.1, key="temperature", format="%f"))
                     top_p_slider = float(st.slider("Top P", min_value=0.1, max_value=1.0, step=0.1, key="top_p", format="%f"))
-                    seed_slider = int(st.number_input("Top K",value = 42, min_value=0, max_value=100, step=1, key="top_k", format="%d"))
+                    seed_slider = int(st.number_input("Seed",value = 42, min_value=0, max_value=100, step=1, key="seed", format="%d"))
                     max_output_slider = int(st.number_input("Max Output Tokens", value= 8192,min_value=1, max_value=8192, step=100, key="max_output_tokens", format="%d"))
                     submitted = st.form_submit_button("Make changes")
                     if submitted:
