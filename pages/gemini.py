@@ -25,7 +25,7 @@ if "messages" not in st.session_state:
 if "options" not in st.session_state:
     st.session_state.options = {"temperature": float(1.0),
         "top_p": float(0.95),
-        "seed" : int(42),
+        "seed" : 42,
         "max_output_tokens" : int(8192)}
 # Initialize system prompt
 if "system_instruction" not in st.session_state:
