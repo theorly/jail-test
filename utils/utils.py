@@ -24,7 +24,7 @@ def get_models():
 def get_response(model, chat_history, options):
     #url = f'http://localhost:11434/api/chat'
     url = f'http://20.54.80.58:11434/api/chat'
-    payload = {'model' : model, 'messages': chat_history , "options" : options, "stream": False, "seed" : int(42)}
+    payload = {'model' : model, 'messages': chat_history , "options" : options, "stream": False}
     headers = {'Content-Type': 'application/json'}
     response = requests.post(url, headers=headers, json=payload)
     if response.status_code == 200:
@@ -47,6 +47,7 @@ def reset_model():
     st.session_state.messages = []
     st.session_state.options = {"temperature": 0.8,
         "top_p": 0.9,
+        "seed" : int(42),
         #"top_k": 64,
         "max_output_tokens" : 8192}
 
