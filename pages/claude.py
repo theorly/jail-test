@@ -54,7 +54,7 @@ if "messages" not in st.session_state:
 if "options" not in st.session_state:
     st.session_state.options = {"temperature": 0.8,
         "top_p": 0.9,
-        "top_k": 64,
+        "seed" : int(42),
         "max_output_tokens" : 4096}
 
 # Display chat messages from history on app rerun
