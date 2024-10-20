@@ -29,7 +29,14 @@ st.divider()
 
 st.text("In this project I will analyze the so called <<jailbreak>>: the act of removing \n the limitations imposed by the manufacturer on these models and to have \n more control over them. \n Here are shown some jailbreak-prompts I got online, while the main goal of my \n studies are to search some new prompts and trying to get a kind of fix.\n")
 
-#selected2 = option_menu(None, ['Option 1', 'Option 2', 'Option 3'], icons = ['🍎', '🍊', '🍇'],menu_icon="cast", default_index = 0, orientation = "horizontal")
+st.markdown("### LLMs Policy: \n")
+st.markdown("***Compliance with Legal and Ethical Standards:*** We do not provide content that promotes hate, violence, discrimination, or harmful behavior. We are committed to refraining from supporting illegal activities or actions that violate local or international laws. \n")
+st.markdown("***Privacy Protection:*** We do not store sensitive personal information, and responses are provided with respect to user confidentiality. \n")
+st.markdown("***Intellectual Property Compliance:*** We avoid reproducing or distributing copyrighted material without permission. However, we may offer general explanations or information about topics of public interest.\n")
+st.markdown("***Content Safety:*** We avoid providing content that could be used for malicious purposes, such as creating malware, hacking, or other activities that could harm cybersecurity.\n")
+st.markdown("***Promotion of Constructive Dialogue:*** We aim to foster educational and respectful conversations, avoiding the spread of misinformation, conspiracy theories, or content that fuels conflict.\n")
+
+st.markdown("### Jailbreak Prompts Example")
 
 df = utils.file_to_dataframe(filepath)
 
