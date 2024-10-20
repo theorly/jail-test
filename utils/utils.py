@@ -49,6 +49,10 @@ def reset_model():
         "top_p": 0.9,
         "seed" : int(42),
         "max_output_tokens" : 8192}
+    st.session_state.gemini_options = {"temperature": float(1.0),
+        "top_p": float(0.95),
+        "max_output_tokens" : int(8192)}
+
 
 @st.dialog("Change LLM parameters")
 def change_options(): 
@@ -70,7 +74,22 @@ def change_options():
                         st.write("PARAMETERS UPDATED:\n" ,"temperature",  st.session_state.options["temperature"],"seed", st.session_state.options["seed"] ,"top_p", 
                                 st.session_state.options["top_p"], "max_output_tokens", st.session_state.options["max_output_tokens"])
                         logging.debug(f"options updated: {st.session_state.options}")
-                       
+
+@st.dialog("Change Gemini parameters")
+def change_gemini_options():                
+      with st.container():
+                with st.form("my_form"):
+                    temp_slider = float(st.slider("Temperature", min_value=0.1, max_value=1.0, step=0.1, key="temperature", format="%f"))
+                    top_p_slider = float(st.slider("Top P", min_value=0.1, max_value=1.0, step=0.1, key="top_p", format="%f"))
+                    max_output_slider = int(st.number_input("Max Output Tokens", value= 8192,min_value=1, max_value=8192, step=100, key="max_output_tokens", format="%d"))
+                    submitted = st.form_submit_button("Make changes")
+                    if submitted:
+                        st.session_state.gemini_options["temperature"] = (temp_slider)
+                        st.session_state.gemini_options["top_p"] = (top_p_slider)
+                        st.session_state.gemini_options["max_output_tokens"] = (max_output_slider)
+                        st.write("PARAMETERS UPDATED:\n" ,"temperature",  st.session_state.gemini_options["temperature"],"seed", st.session_state.gemini_options["seed"] ,"top_p", 
+                                st.session_state.gemini_options["top_p"], "max_output_tokens", st.session_state.gemini_options["max_output_tokens"])
+                        logging.debug(f"options updated: {st.session_state.gemini_options}")       
 
 @st.dialog("Insert a system prompt")
 def prompt_system():

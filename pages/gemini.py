@@ -7,6 +7,7 @@ import logging
 import os
 from dotenv import load_dotenv
 
+
 load_dotenv()
 utils.reset_model()
 
@@ -22,10 +23,9 @@ print(genai.get_model("models/gemini-1.5-flash"))
 if "messages" not in st.session_state:
     st.session_state.messages = []
 # Initialize Gemini parameters 
-if "options" not in st.session_state:
-    st.session_state.options = {"temperature": float(1.0),
+if "gemini_options" not in st.session_state:
+    st.session_state.gemini_options = {"temperature": float(1.0),
         "top_p": float(0.95),
-        "seed" : 42,
         "max_output_tokens" : int(8192)}
 # Initialize system prompt
 if "system_instruction" not in st.session_state:
@@ -34,7 +34,7 @@ if "system_instruction" not in st.session_state:
 
 def gemini_response(): 
     model = genai.GenerativeModel(model_name="gemini-1.5-flash", 
-                    generation_config= st.session_state.options,
+                    generation_config= st.session_state.gemini_options,
                     system_instruction= st.session_state.system_instruction,
                     safety_settings={ 
                           HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,
@@ -43,10 +43,12 @@ def gemini_response():
                           HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_NONE,
                     }
                 )
-         
+
     chat = model.start_chat(history=st.session_state.messages)
 
     response = chat.send_message(st.session_state.messages[-1]['parts']) 
+ 
+
 
     return response.text
 
@@ -76,6 +78,7 @@ if prompt := st.chat_input("Insert your prompt!"):
             st.session_state.messages.append({"role": "user", "parts": prompt})
             with st.chat_message("user"):
                 st.markdown(prompt)
+                
             
             with st.chat_message("assistant"):
                 stream = gemini_response()
@@ -92,7 +95,7 @@ col1, col2, col3, col4 = st.columns([1, 1, 1, 1])  # Due colonne di larghezza ug
 with col1:
     settings = st.button(":material/settings: Settings")  
     if settings:
-        utils.change_options()
+        utils.change_gemini_options()
         st.write("Modifica i parametri del modello")
             
 with col2: 
