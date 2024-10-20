@@ -10,7 +10,7 @@ from pages.gemini import gemini_response
 from pages.gpt import gpt_response
 from pages.claude import claude_response
 
-filepath_jailbreak = 'prompts/test.xlsx'
+filepath_jailbreak = 'prompts/jailbreak_prompts.xlsx'
 filepath_nojailbreak = 'prompts/nojailbreak.xlsx'
 df_jailbreak = utils.file_to_dataframe(filepath_jailbreak)
 df_nojailbreak = utils.file_to_dataframe(filepath_nojailbreak)
@@ -132,6 +132,7 @@ if not on:
 else:
     st.markdown("***Jailbreak prompts!*** \n")
     df = df_jailbreak
+    
 
 df['selected'] = False
 df = df[['selected'] + [col for col in df.columns if col != 'selected']]
