@@ -118,7 +118,6 @@ def prompt_results(prompts):
 st.subheader("Jailbreak Prompts")
 
 
-
 st.divider()
 
 st.markdown("**By default in this page there is a Jailbreak prompts list, which could be copied or just prompted to LLMs.** \n")
@@ -132,11 +131,11 @@ if not on:
 else:
     st.markdown("***Jailbreak prompts!*** \n")
     df = df_jailbreak
-    
 
 df['selected'] = False
 df = df[['selected'] + [col for col in df.columns if col != 'selected']]
-edited_df = st.data_editor(df, num_rows="dynamic", width=1000, height=500)
+edited_df = st.data_editor(df, width=1000, height=500, hide_index=True)
+#edited in origin had num_rows="dynamic"
 
 st.markdown("**You can select one or more prompts in the box and click on the run button to analyze it or them!** \n")
 st.markdown("**Once the inference is done, you can view the results on the screen or download to analyze in a second moment.** \n")
