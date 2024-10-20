@@ -11,3 +11,4 @@ transformers
 tokenizers 
 openai
 openpyxl
+streamlit-timeline

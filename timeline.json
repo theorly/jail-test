@@ -1,0 +1,54 @@
+
+{
+    "title": {
+        "media": {
+          "url": "",
+          "caption": " <a target=\"_blank\" href=''>credits</a>",
+          "credit": ""
+        },
+        "text": {
+          "headline": "JAILBREAK-GPT TIMELINE",
+          "text": "<p></p>"
+        }
+    },
+    "events": [
+      {
+        "start_date": {
+          "year": "2024",
+          "month":"4"
+        },
+        "text": {
+          "headline": "BIBLIOGRAPHY ANALYSIS",
+          "text": "<p>Retrieval of all the bibliography regarding LLMs and the topic of Jailbreaking</p>"
+        }
+      },
+      {
+       "media": {
+          "url": "https://youtu.be/hSxCJx23zDo",
+          "caption": "Jailbreak-GPT CLI TOOL)"
+        },
+        "start_date": {
+          "year": "2024",
+          "month":"6"
+        },
+        "text": {
+          "headline": "First Jailbreak-GPT tool",
+          "text": "First beta version of the tool"
+        }
+      },
+      {
+        "media": {
+          "url": "https://youtu.be/NYzbJJeW7Co",
+          "caption": "Jailbreak-GPT definitive version"
+        },
+        "start_date": {
+          "year": "2024",
+          "month":"9"
+        },
+        "text": {
+          "headline": "Deploy Jailbreak-GPT ",
+          "text": "Definitive deploy of Jailbreak-GPT Tool"
+        }
+      }
+    ]
+}
