@@ -18,16 +18,29 @@ utils.reset_model()
 # Initialize chat history
 if "messages" not in st.session_state:
     st.session_state.messages = []
-if "options" not in st.session_state:
-    st.session_state.options = {"temperature": float(1.0),
-        "top_p": float(0.95),
-        "max_output_tokens" : int(8192)}
+#if "options" not in st.session_state:
+#    st.session_state.options = {"temperature": float(1.0),
+#        "top_p": float(0.95),
+#        "max_output_tokens" : int(8192)}
+if "options" not in st.session_state: 
+    st.session_state.options = {"temperature": 0.2,
+                "top_p": 0.9,
+                "seed" : int(42),
+                "max_output_tokens" : 4096}
+if "gemini_options" not in st.session_state:
+    st.session_state.gemini_options = {"temperature": 0.1,
+                "top_p": 0.9,
+                "max_output_tokens" : 4096}
 if "system_instruction" not in st.session_state:
     st.session_state.system_instruction = None
 
-options = {"temperature": 0.8,
+options = {"temperature": 0.2,
                 "top_p": 0.9,
-                #"top_k": 64,
+                "seed" : int(42),
+                "max_output_tokens" : 4096}
+
+gemini_options = {"temperature": 0.1,
+                "top_p": 0.9,
                 "max_output_tokens" : 4096}
 
 def prompt_results(prompts): 
@@ -44,7 +57,7 @@ def prompt_results(prompts):
     
     for prompt in prompts: 
         st.session_state.messages = []
-        download_chat.append({"model": 'gemini-1.5-flash', "options": st.session_state.options})
+        download_chat.append({"model": 'gemini-1.5-flash', "options": st.session_state.gemini_options})
         st.session_state.messages.append({"role": "user", "parts": prompt})
         download_chat.append({"role": "user", "content": prompt})
         try:
@@ -64,7 +77,7 @@ def prompt_results(prompts):
         download_chat.append({"role": "assistant", "content": response})
 
         st.session_state.messages = []
-        download_chat.append({"model": 'claude-3-5-sonnet-20240620', "options": st.session_state.options})
+        download_chat.append({"model": 'claude-3-5-sonnet-20240620', "options": st.session_state.gemini_options})
         st.session_state.messages.append({"role": "user", "parts": prompt})
         download_chat.append({"role": "user", "content": prompt})
         try:
@@ -77,19 +90,26 @@ def prompt_results(prompts):
         #for prompt in prompts: 
             download_chat.append({"model": model, "options": options})
             chat_history.append({"role": "user", "content": prompt})   
-            download_chat.append({"role": "user", "content": prompt})   
-            response = utils.get_response(model, chat_history, options)
+            download_chat.append({"role": "user", "content": prompt})
+            try:   
+                response = utils.get_response(model, chat_history, options)
+            except:
+                response = "Error in the response"
             chat_history.append({"role": "assistant", "content": response})
             download_chat.append({"role": "assistant", "content": response})
 
     download_chat_json = json.dumps(download_chat, indent=4)
-    
+
+    st.write("Download the results to analyze them.")
     st.download_button(
                         label=":material/download: Download",
                         data=download_chat_json,
                         file_name='results.json',
                         mime='application/json'
                     )
+    
+    st.write("Results: \n")
+    st.write(download_chat)
 
     
 
@@ -99,25 +119,32 @@ st.subheader("Jailbreak Prompts")
 
 st.divider()
 
-st.text("Here there is a Jailbreak prompts list, which could be copied and analyzed. \n")
+st.markdown("**Here there is a Jailbreak prompts list, which could be copied and analyzed.** \n")
 
 df['selected'] = False
 df = df[['selected'] + [col for col in df.columns if col != 'selected']]
 edited_df = st.data_editor(df, num_rows="dynamic")
 
-st.write("You can select a model from the sidebar and start interacting with it. \n")
+st.markdown("**You can select one or more Jailbreak prompts in the box and click on the run button to analyze it or them!.** \n")
+st.markdown("**Once the inference is done, you can view the results on the screen or download to analyze in a second moment.** \n")
+
+st.markdown("**If no prompt is selected by the user, all of them will be selected by default.**\n")
+
+st.divider()
 
 selected_rows = edited_df[edited_df['selected']].index.tolist()
 if selected_rows:
     selected_data = edited_df.loc[selected_rows]  # Seleziona le righe con le checkbox attivate
+    st.markdown("**Selected prompts:** \n")
+    st.write(selected_data['text'])
 else:
     selected_data = df.drop(columns=['selected'])
+    st.markdown("**Selected prompts:** \n")
+    st.markdown("ALL prompts selected.")
 
 st.divider()
 
-st.text("Or you can launch all the prompts here, saving the results in a file and then analyzing it. \n")
-
-button = st.button("Run all")
+button = st.button("Run Inference")
 
 if button:
     prompt_results(selected_data)

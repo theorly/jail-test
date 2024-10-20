@@ -45,6 +45,7 @@ def display_chat(chat_history):
 def reset_model():
     st.session_state.selected_model = None
     st.session_state.messages = []
+    """ 
     st.session_state.options = {"temperature": 0.8,
         "top_p": 0.9,
         "seed" : int(42),
@@ -52,6 +53,14 @@ def reset_model():
     st.session_state.gemini_options = {"temperature": float(1.0),
         "top_p": float(0.95),
         "max_output_tokens" : int(8192)}
+    """ 
+    st.session_state.options = {"temperature": 0.2,
+        "top_p": 0.9,
+        "seed" : int(42),
+        "max_output_tokens" : 4096} 
+    st.session_state.gemini_options = {"temperature": 0.1,
+        "top_p": 0.9,
+        "max_output_tokens" : 4096}
 
 
 @st.dialog("Change LLM parameters")

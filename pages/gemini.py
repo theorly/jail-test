@@ -23,10 +23,14 @@ print(genai.get_model("models/gemini-1.5-flash"))
 if "messages" not in st.session_state:
     st.session_state.messages = []
 # Initialize Gemini parameters 
+#if "gemini_options" not in st.session_state:
+#    st.session_state.gemini_options = {"temperature": float(1.0),
+#        "top_p": float(0.95),
+#        "max_output_tokens" : int(8192)}
 if "gemini_options" not in st.session_state:
-    st.session_state.gemini_options = {"temperature": float(1.0),
-        "top_p": float(0.95),
-        "max_output_tokens" : int(8192)}
+    st.session_state.gemini_options = {"temperature": 0.1,
+                "top_p": 0.9,
+                "max_output_tokens" : 4096}
 # Initialize system prompt
 if "system_instruction" not in st.session_state:
     st.session_state.system_instruction = None

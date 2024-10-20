@@ -29,11 +29,11 @@ def gpt_response():
 if "messages" not in st.session_state:
     st.session_state.messages = []
 # Initialize Gemini parameters 
-if "options" not in st.session_state:
-    st.session_state.options = {"temperature": float(1.0),
-        "top_p": float(0.95),
-        "seed" : int(42),
-        "max_output_tokens" : int(8192)}
+if "options" not in st.session_state: 
+    st.session_state.options = {"temperature": 0.2,
+                "top_p": 0.9,
+                "seed" : int(42),
+                "max_output_tokens" : 4096}
 # Initialize system prompt
 if "system_instruction" not in st.session_state:
     st.session_state.system_instruction = None

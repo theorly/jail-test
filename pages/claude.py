@@ -19,10 +19,10 @@ def claude_response():
 
     message = client.messages.create(
                     model="claude-3-5-sonnet-20240620",
-                    temperature= st.session_state.options['temperature'],
-                    top_p= st.session_state.options['top_p'],
+                    temperature= st.session_state.gemini_options['temperature'],
+                    top_p= st.session_state.gemini_options['top_p'],
                     #top_k= st.session_state.options['top_k'],
-                    max_tokens= st.session_state.options['max_output_tokens'],
+                    max_tokens= st.session_state.gemini_options['max_output_tokens'],
                     messages = st.session_state.messages
             )
     if response.status_code == 200:
@@ -51,11 +51,10 @@ st.divider()
 if "messages" not in st.session_state:
     st.session_state.messages = []
 # Initialize Claude parameters 
-if "options" not in st.session_state:
-    st.session_state.options = {"temperature": 0.8,
-        "top_p": 0.9,
-        "seed" : int(42),
-        "max_output_tokens" : 4096}
+if "gemini_options" not in st.session_state:
+    st.session_state.gemini_options = {"temperature": 0.1,
+                "top_p": 0.9,
+                "max_output_tokens" : 4096}
 
 # Display chat messages from history on app rerun
 for message in st.session_state.messages:

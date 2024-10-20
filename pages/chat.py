@@ -12,12 +12,16 @@ if 'selected_model' not in st.session_state:
 if "messages" not in st.session_state:
     st.session_state.messages = []
 # Initialize LLM parameters
-if "options" not in st.session_state:
-    st.session_state.options = {"temperature": 0.8,
-        "top_p": 0.9,
-        "seed" : int(42),
-        #"top_k": 64,
-        "max_output_tokens" : 8192}
+#if "options" not in st.session_state:
+#    st.session_state.options = {"temperature": 0.8,
+#        "top_p": 0.9,
+#        "seed" : int(42),
+#        "max_output_tokens" : 8192}
+if "options" not in st.session_state: 
+    st.session_state.options = {"temperature": 0.2,
+                "top_p": 0.9,
+                "seed" : int(42),
+                "max_output_tokens" : 4096}
 
 
 st.subheader(f"Modello selezionato: {st.session_state.selected_model}")
