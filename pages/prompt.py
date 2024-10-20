@@ -10,8 +10,10 @@ from pages.gemini import gemini_response
 from pages.gpt import gpt_response
 from pages.claude import claude_response
 
-filepath = 'prompts/test.xlsx'
-df = utils.file_to_dataframe(filepath)
+filepath_jailbreak = 'prompts/test.xlsx'
+filepath_nojailbreak = 'prompts/nojailbreak.xlsx'
+df_jailbreak = utils.file_to_dataframe(filepath_jailbreak)
+df_nojailbreak = utils.file_to_dataframe(filepath_nojailbreak)
 
 utils.reset_model()
 
@@ -119,13 +121,23 @@ st.subheader("Jailbreak Prompts")
 
 st.divider()
 
-st.markdown("**Here there is a Jailbreak prompts list, which could be copied and analyzed.** \n")
+st.markdown("**By default in this page there is a Jailbreak prompts list, which could be copied or just prompted to LLMs.** \n")
+st.markdown("**You can switch to the no jailbroken prompts list by toggling the switch below.** \n")
+
+on = st.toggle("Jailbreak prompts", True)
+
+if not on:
+    st.markdown("***No jailbroken prompts!*** \n")
+    df = df_nojailbreak
+else:
+    st.markdown("***Jailbreak prompts!*** \n")
+    df = df_jailbreak
 
 df['selected'] = False
 df = df[['selected'] + [col for col in df.columns if col != 'selected']]
-edited_df = st.data_editor(df, num_rows="dynamic")
+edited_df = st.data_editor(df, num_rows="dynamic", width=1000, height=500)
 
-st.markdown("**You can select one or more Jailbreak prompts in the box and click on the run button to analyze it or them!.** \n")
+st.markdown("**You can select one or more prompts in the box and click on the run button to analyze it or them!** \n")
 st.markdown("**Once the inference is done, you can view the results on the screen or download to analyze in a second moment.** \n")
 
 st.markdown("**If no prompt is selected by the user, all of them will be selected by default.**\n")
@@ -134,9 +146,10 @@ st.divider()
 
 selected_rows = edited_df[edited_df['selected']].index.tolist()
 if selected_rows:
-    selected_data = edited_df.loc[selected_rows]  # Seleziona le righe con le checkbox attivate
+    selected_data = (edited_df.loc[selected_rows])  # Seleziona le righe con le checkbox attivate
     st.markdown("**Selected prompts:** \n")
-    st.write(selected_data['text'])
+    st.dataframe(selected_data['text'], hide_index=True, width=700)
+    #st.write(selected_data['text'])
 else:
     selected_data = df.drop(columns=['selected'])
     st.markdown("**Selected prompts:** \n")
