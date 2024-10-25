@@ -137,32 +137,32 @@ def prompt_results(prompts):
             download_chat.append({"role": "assistant", "content": response})
 
     download_chat_json = json.dumps(download_chat, indent=4)
-    save_response_to_json(download_chat, "1")
+    save_response_to_json(download_chat, "all")
 
     """ PROVAAAAA """
     folder_to_zip = '/home/site/wwwroot/responses'
 
-    if st.button('Scarica la Cartella come ZIP'):
-        if os.path.exists(folder_to_zip):
-            zip_file_path = zip_folder(folder_to_zip)
+    if os.path.exists(folder_to_zip):
+        zip_file_path = zip_folder(folder_to_zip)
 
-            # Verifica se il file zip è stato creato
-            if os.path.exists(zip_file_path):
-                with open(zip_file_path, 'rb') as f:
-                    st.download_button(
-                        label="Scarica ZIP",
-                        data=f,
-                        file_name=os.path.basename(zip_file_path),
-                        mime='application/zip'
-                    )
-            else:
-                st.error("Si è verificato un errore durante la creazione del file ZIP.")
+        # Verifica se il file zip è stato creato
+        if os.path.exists(zip_file_path):
+            with open(zip_file_path, 'rb') as f:
+                st.download_button(
+                    label="Scarica ZIP",
+                    data=f,
+                    file_name=os.path.basename(zip_file_path),
+                    mime='application/zip'
+                )
         else:
-            st.error("La cartella specificata non esiste.")
+            st.error("Si è verificato un errore durante la creazione del file ZIP.")
+    else:
+        st.error("La cartella specificata non esiste.")
 
     """ TERMINA PROVA """
 
     st.write("Download the results to analyze them.")
+    
     st.download_button(
                         label=":material/download: Download",
                         data=download_chat_json,
