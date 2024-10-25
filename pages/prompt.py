@@ -48,7 +48,7 @@ gemini_options = {"temperature": 0.1,
 
 def save_response_to_json(response, prompt_id):
     # Crea una cartella per salvare i file JSON, se non esiste
-    output_dir = 'home/site/wwwroot/responses'  # Percorso all'interno del container
+    output_dir = '/home/site/wwwroot/responses'  # Percorso all'interno del container
     #os.makedirs(output_dir, exist_ok=True)
 
     # Crea un nome file unico basato sul modello e timestamp
@@ -121,7 +121,7 @@ def prompt_results(prompts):
             download_chat.append({"role": "assistant", "content": response})
 
     download_chat_json = json.dumps(download_chat, indent=4)
-    save_response_to_json(download_chat_json, "1")
+    save_response_to_json(download_chat, "1")
 
     st.write("Download the results to analyze them.")
     st.download_button(
