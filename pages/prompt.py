@@ -6,7 +6,6 @@ import numpy as np
 import openpyxl as px
 import json
 import os
-import logging
 from utils import utils
 from pages.gemini import gemini_response
 from pages.gpt import gpt_response
@@ -56,15 +55,15 @@ def save_response_to_json(response, prompt_id):
    
     filename = f"response_{prompt_id}.json"
     filepath = os.path.join(output_dir)
-    logging.debug(filepath)
+    print(filepath)
     file = f"{filepath}/{filename}"
-    logging.debug(file)
+    print(file)
 
     # Salva la risposta in un file JSON
     with open(file, 'w') as json_file:
         json.dump(response, json_file, indent=4)
 
-    logging.debug(f"Risposta salvata in: {filepath}")
+    print(f"Risposta salvata in: {filepath}")
 
 def prompt_results(prompts): 
     chat_history = []
