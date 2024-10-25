@@ -6,6 +6,7 @@ import numpy as np
 import openpyxl as px
 import json
 import os
+import zipfile
 from utils import utils
 from pages.gemini import gemini_response
 from pages.gpt import gpt_response
@@ -45,6 +46,21 @@ options = {"temperature": 0.2,
 gemini_options = {"temperature": 0.1,
                 "top_p": 0.9,
                 "max_output_tokens" : 4096}
+
+
+
+def zip_folder(folder_path):
+    """Crea un file zip dalla cartella specificata."""
+    zip_name = f"{folder_path.rstrip('/').split('/')[-1]}"  # Usa il nome della cartella
+    zip_path = f"{zip_name}.zip"
+    with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
+        for root, _, files in os.walk(folder_path):
+            for file in files:
+                zipf.write(os.path.join(root, file),
+                            os.path.relpath(os.path.join(root, file), 
+                            os.path.join(folder_path, '..')))
+    return zip_path
+
 
 def save_response_to_json(response, prompt_id):
     # Crea una cartella per salvare i file JSON, se non esiste
@@ -122,6 +138,29 @@ def prompt_results(prompts):
 
     download_chat_json = json.dumps(download_chat, indent=4)
     save_response_to_json(download_chat, "1")
+
+    """ PROVAAAAA """
+    folder_to_zip = '/home/site/wwwroot/responses'
+
+    if st.button('Scarica la Cartella come ZIP'):
+        if os.path.exists(folder_to_zip):
+            zip_file_path = zip_folder(folder_to_zip)
+
+            # Verifica se il file zip è stato creato
+            if os.path.exists(zip_file_path):
+                with open(zip_file_path, 'rb') as f:
+                    st.download_button(
+                        label="Scarica ZIP",
+                        data=f,
+                        file_name=os.path.basename(zip_file_path),
+                        mime='application/zip'
+                    )
+            else:
+                st.error("Si è verificato un errore durante la creazione del file ZIP.")
+        else:
+            st.error("La cartella specificata non esiste.")
+
+    """ TERMINA PROVA """
 
     st.write("Download the results to analyze them.")
     st.download_button(
