@@ -17,7 +17,7 @@ pages = {
         st.Page("pages/home.py", title="Home", icon=":material/home:" , default=True)
     ],
     "Chat": [
-        st.Page("pages/chat.py" , title="Chat with Ollama models" , icon=":material/chat:"),
+        #st.Page("pages/chat.py" , title="Chat with Ollama models" , icon=":material/chat:"),
         st.Page("pages/claude.py", title="Chat with Claude" , icon=":material/robot:"),
         st.Page("pages/gemini.py", title="Chat with Google Gemini" , icon=":material/smart_toy:"),
         st.Page("pages/gpt.py", title="Talk with ChatGPT" , icon=":material/hive:"),
