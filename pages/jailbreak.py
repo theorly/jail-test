@@ -221,13 +221,14 @@ with col2:
                 # Verifica se il file zip è stato creato
                 if os.path.exists(zip_file_path):
                     with open(zip_file_path, 'rb') as f:
-                        st.download_button(
-                            label="DOWNLOAD RESULTS FOLDER",
+                        zip_data = f.read()
+                    st.download_button(
+                            #label="DOWNLOAD RESULTS FOLDER",
                             data=f,
                             file_name=os.path.basename(zip_file_path),
-                            mime='application/zip', 
-                            visible=False
-                        )
+                            mime='application/zip'
+                    )
+                    os.remove(zip_file_path)
                 else:
                     st.error("Si è verificato un errore durante la creazione del file ZIP.")
         else:
