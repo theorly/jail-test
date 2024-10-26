@@ -225,7 +225,8 @@ with col2:
                             label="DOWNLOAD RESULTS FOLDER",
                             data=f,
                             file_name=os.path.basename(zip_file_path),
-                            mime='application/zip'
+                            mime='application/zip', 
+                            visible=False
                         )
                 else:
                     st.error("Si è verificato un errore durante la creazione del file ZIP.")
