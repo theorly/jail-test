@@ -88,10 +88,10 @@ def prompt_results(prompts, df_type):
     models = utils.get_models()
     st.write("Models:")
     st.write(["Google Gemini", "ChatGPT", "Claude"] + models)
-    st.write("Selected prompts:")
+    #st.write("Selected prompts:")
     prompts = prompts['text'].tolist()
-    for prompt in prompts:
-        st.write(prompt)
+    #for prompt in prompts:
+    #    st.write(prompt)
 
     
     for index,prompt in enumerate(prompts):
@@ -139,22 +139,15 @@ def prompt_results(prompts, df_type):
             download_chat.append({"role": "assistant", "content": response})
         
         save_response_to_json(download_chat, df_type ,index)
-
-    download_chat_json = json.dumps(download_chat, indent=4)
-    
-
-
-    st.write("Download the results to analyze them.")
-    
-    st.download_button(
-                        label=":material/download: Download",
-                        data=download_chat_json,
-                        file_name='results.json',
-                        mime='application/json'
-                    )
-    
-    #st.write("Results: \n")
-    #st.write(download_chat)
+        download_chat_json = json.dumps(download_chat, indent=4)
+        st.markdown(f"**Results:** \n")
+        st.write(download_chat)
+        st.download_button(
+            label="Download results JSON",
+            data=download_chat_json,
+            file_name=f"results_{df_type}_{index}.json",
+            mime='application/json'
+        )
 
     
 
@@ -183,9 +176,8 @@ edited_df = st.data_editor(df, width=1000, height=500, hide_index=True)
 #edited in origin had num_rows="dynamic"
 
 st.markdown("**You can select one or more prompts in the box and click on the run button to analyze it or them!** \n")
-st.markdown("**Once the inference is done, you can view the results on the screen or download to analyze in a second moment.** \n")
-
 st.markdown("**If no prompt is selected by the user, all of them will be selected by default.**\n")
+st.markdown("**Once the inference is done, the results are shown on the page and saved on cloud. You can download the results folder with the download button.** \n")
 
 st.divider()
 
@@ -202,26 +194,31 @@ else:
 
 st.divider()
 
-button = st.button("Run Inference")
+col1, col2 = st.columns([1, 1])  # Due colonne di larghezza uguale
+
+with col1:
+    button = st.button("Run Inference")
+    
+with col2:
+    if st.button("Download Results Folder"):
+        if os.path.exists(folder_to_zip):
+                zip_file_path = zip_folder(folder_to_zip)
+
+                # Verifica se il file zip è stato creato
+                if os.path.exists(zip_file_path):
+                    with open(zip_file_path, 'rb') as f:
+                        st.download_button(
+                            label="DOWNLOAD RESULTS FOLDER",
+                            data=f,
+                            file_name=os.path.basename(zip_file_path),
+                            mime='application/zip'
+                        )
+                else:
+                    st.error("Si è verificato un errore durante la creazione del file ZIP.")
+        else:
+                st.error("La cartella specificata non esiste.")
 
 st.divider()
-
-if os.path.exists(folder_to_zip):
-        zip_file_path = zip_folder(folder_to_zip)
-
-        # Verifica se il file zip è stato creato
-        if os.path.exists(zip_file_path):
-            with open(zip_file_path, 'rb') as f:
-                st.download_button(
-                    label="DOWNLOAD RESULTS FOLDER",
-                    data=f,
-                    file_name=os.path.basename(zip_file_path),
-                    mime='application/zip'
-                )
-        else:
-            st.error("Si è verificato un errore durante la creazione del file ZIP.")
-else:
-        st.error("La cartella specificata non esiste.")
 
 if button:
     prompt_results(selected_data, df_type)
