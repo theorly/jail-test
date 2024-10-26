@@ -84,6 +84,7 @@ def save_response_to_json(response, prompt_type ,prompt_id):
 
 def prompt_results(prompts, df_type): 
     chat_history = []
+    saved_chat = []
     download_chat = []
     models = utils.get_models()
     st.write("Models:")
@@ -95,59 +96,72 @@ def prompt_results(prompts, df_type):
 
     
     for index,prompt in enumerate(prompts):
-        download_chat = [] 
+        saved_chat = [] 
         st.session_state.messages = []
         download_chat.append({"model": 'gemini-1.5-flash', "options": st.session_state.gemini_options})
+        saved_chat.append({"model": 'gemini-1.5-flash', "options": st.session_state.gemini_options})
         st.session_state.messages.append({"role": "user", "parts": prompt})
         download_chat.append({"role": "user", "content": prompt})
+        saved_chat.append({"role": "user", "content": prompt})
         try:
             response = gemini_response()
         except:
             response = "Error in the Gemini response"
         download_chat.append({"role": "assistant", "content": response})
+        saved_chat.append({"role": "assistant", "content": response})
 
         st.session_state.messages = []
         download_chat.append({"model": 'gpt-3.5-turbo', "options": st.session_state.options})
+        saved_chat.append({"model": 'gpt-3.5-turbo', "options": st.session_state.options})
         st.session_state.messages.append({"role": "user", "parts": prompt})
         download_chat.append({"role": "user", "content": prompt})
+        saved_chat.append({"role": "user", "content": prompt})
         try:
             response = gpt_response()
         except:
             response = "Error in the ChatGPT response"
         download_chat.append({"role": "assistant", "content": response})
+        saved_chat.append({"role": "assistant", "content": response})
 
         st.session_state.messages = []
         download_chat.append({"model": 'claude-3-5-sonnet-20240620', "options": st.session_state.gemini_options})
+        saved_chat.append({"model": 'claude-3-5-sonnet-20240620', "options": st.session_state.gemini_options})
         st.session_state.messages.append({"role": "user", "parts": prompt})
         download_chat.append({"role": "user", "content": prompt})
+        saved_chat.append({"role": "user", "content": prompt})
         try:
             response = claude_response()
         except:
             response = "Error in the Claude response"
         download_chat.append({"role": "assistant", "content": response})
+        saved_chat.append({"role": "assistant", "content": response})
 
         for model in models:
         #for prompt in prompts: 
             download_chat.append({"model": model, "options": options})
+            saved_chat.append({"model": model, "options": options})
             chat_history.append({"role": "user", "content": prompt})   
             download_chat.append({"role": "user", "content": prompt})
+            saved_chat.append({"role": "user", "content": prompt})
             try:   
                 response = utils.get_response(model, chat_history, options)
             except:
                 response = "Error in the response"
             chat_history.append({"role": "assistant", "content": response})
             download_chat.append({"role": "assistant", "content": response})
+            saved_chat.append({"role": "assistant", "content": response})
         
-        save_response_to_json(download_chat, df_type ,index)
-        download_chat_json = json.dumps(download_chat, indent=4)
-        st.markdown(f"**Results:** \n")
-        st.write(download_chat)
-        st.download_button(
+        save_response_to_json(saved_chat, df_type ,index)
+
+    download_chat_json = json.dumps(download_chat, indent=4)
+    st.markdown(f"**Results:** \n")
+    st.write(download_chat)
+    st.download_button(
             label="Download results JSON",
             data=download_chat_json,
             file_name=f"results_{df_type}_{index}.json",
             mime='application/json'
-        )
+    )
 
     
 
