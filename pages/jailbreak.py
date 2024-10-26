@@ -223,8 +223,8 @@ with col2:
                     with open(zip_file_path, 'rb') as f:
                         zip_data = f.read()
                     st.download_button(
-                            #label="DOWNLOAD RESULTS FOLDER",
-                            data=f,
+                            label="DOWNLOAD RESULTS FOLDER",
+                            data=zip_data,
                             file_name=os.path.basename(zip_file_path),
                             mime='application/zip'
                     )
