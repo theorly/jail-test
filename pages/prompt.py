@@ -65,7 +65,7 @@ def zip_folder(folder_path):
 def save_response_to_json(response, prompt_id):
     # Crea una cartella per salvare i file JSON, se non esiste
     output_dir = '/home/site/wwwroot/responses'  # Percorso all'interno del container
-    #os.makedirs(output_dir, exist_ok=True)
+    os.makedirs(output_dir, exist_ok=True)
 
     # Crea un nome file unico basato sul modello e timestamp
    
@@ -170,8 +170,8 @@ def prompt_results(prompts):
                         mime='application/json'
                     )
     
-    st.write("Results: \n")
-    st.write(download_chat)
+    #st.write("Results: \n")
+    #st.write(download_chat)
 
     
 
