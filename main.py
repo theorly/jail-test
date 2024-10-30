@@ -25,7 +25,8 @@ pages = {
     "Resources" : [
         st.Page("pages/TokenCount.py", title="Token Counts", icon=":material/filter_3:"),
         st.Page("pages/jailbreak.py", title="Jailbreak Prompts", icon=":material/receipt_long:"),
-        st.Page("pages/results.py", title="Results", icon=":material/output:")
+        st.Page("pages/results.py", title="Results", icon=":material/output:"),
+        st.Page("pages/experiments.py", title="Experiments", icon=":material/whatshot:")
     ],
     "Info": [
         st.Page("pages/info.py", title="Info", icon=":material/info:")
