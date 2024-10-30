@@ -124,10 +124,11 @@ def run_experiments(df_type, selected_data):
                 download_chat.append({"role": "model", "parts": response})
                 saved_chat.append({"role": "model", "parts": response})
                 st.session_state.messages.append({"role": "model", "parts": response})
+                
+                save_response_to_json(saved_chat, type_ ,index, 'gemini')
                 st.session_state.messages = []
                 saved_chat = []
 
-                save_response_to_json(saved_chat, type_ ,index, 'gemini')
 
                 #run ChatGPT    
                 download_chat.append({"model": 'gpt-3.5-turbo', "options": st.session_state.options})
@@ -151,10 +152,11 @@ def run_experiments(df_type, selected_data):
                     response = "Error in the ChatGPT response"
                 download_chat.append({"role": "assistant", "content": response})
                 saved_chat.append({"role": "assistant", "content": response})
+                
+                save_response_to_json(saved_chat, type_ ,index, 'gpt')
                 st.session_state.messages = []
                 saved_chat = []
 
-                save_response_to_json(saved_chat, type_ ,index, 'gpt')
 
                 #run Claude
                 download_chat.append({"model": 'claude-3-5-sonnet-20240620', "options": st.session_state.gemini_options})
@@ -177,9 +179,10 @@ def run_experiments(df_type, selected_data):
                     response = "Error in the Claude response"
                 download_chat.append({"role": "assistant", "content": response})
                 saved_chat.append({"role": "assistant", "content": response})
+                
+                save_response_to_json(saved_chat, type_ ,index, 'claude')
                 st.session_state.messages = []  
                 saved_chat = []
-                save_response_to_json(saved_chat, type_ ,index, 'claude')
 
                 # run other models
                 for model in models: 
@@ -205,9 +208,10 @@ def run_experiments(df_type, selected_data):
                     chat_history.append({"role": "assistant", "content": response})
                     download_chat.append({"role": "assistant", "content": response})
                     saved_chat.append({"role": "assistant", "content": response})
+                    
+                    save_response_to_json(saved_chat, type_ ,index, model)
                     st.session_state.messages = []
                     saved_chat = []
-                    save_response_to_json(saved_chat, type_ ,index, model)
                 
     else: 
         type_ = "nojailbreak"
@@ -230,9 +234,10 @@ def run_experiments(df_type, selected_data):
             #append risposta alla request 
             download_chat.append({"role": "assistant", "content": response})
             saved_chat.append({"role": "assistant", "content": response})
+            
+            save_response_to_json(saved_chat, df_type ,index, 'gemini')
             st.session_state.messages.append({"role": "assistant", "content": response})
             st.session_state.messages = []
-            save_response_to_json(saved_chat, df_type ,index, 'gemini')
 
             #run ChatGPT
             download_chat.append({"model": 'gpt-3.5-turbo', "options": st.session_state.options})
@@ -247,9 +252,10 @@ def run_experiments(df_type, selected_data):
             download_chat.append({"role": "assistant", "content": response})
             saved_chat.append({"role": "assistant", "content": response})
             st.session_state.messages.append({"role": "assistant", "content": response})
+            
+            save_response_to_json(saved_chat, df_type ,index, 'gpt')
             st.session_state.messages = []
             saved_chat = []
-            save_response_to_json(saved_chat, df_type ,index, 'gpt')
 
             #run Claude
             download_chat.append({"model": 'claude-3-5-sonnet-20240620', "options": st.session_state.gemini_options})
@@ -264,9 +270,10 @@ def run_experiments(df_type, selected_data):
             download_chat.append({"role": "assistant", "content": response})
             saved_chat.append({"role": "assistant", "content": response})
             st.session_state.messages.append({"role": "assistant", "content": response})
+            
+            save_response_to_json(saved_chat, df_type ,index, 'claude')
             st.session_state.messages = []
             saved_chat = []
-            save_response_to_json(saved_chat, df_type ,index, 'claude')
 
             # run other models
             for model in models:
@@ -282,13 +289,15 @@ def run_experiments(df_type, selected_data):
                 chat_history.append({"role": "assistant", "content": response})
                 download_chat.append({"role": "assistant", "content": response})
                 saved_chat.append({"role": "assistant", "content": response})
+                
+                save_response_to_json(saved_chat, df_type ,index, model)
                 st.session_state.messages = []
                 saved_chat = []
-                save_response_to_json(saved_chat, df_type ,index, model)
            
 
-    st.write("Experiments completed! \n")
-    st.write(download_chat)
+    st.markdown("**Experiments completed!** \n")
+    st.write("Results saved in the responses folder.Download it! \n")
+    #st.write(download_chat)
 
 
 
