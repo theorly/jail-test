@@ -60,14 +60,15 @@ def zip_folder(folder_path):
                             os.path.join(folder_path, '..')))
     return zip_path
 
-def save_response_to_json(response, prompt_type ,prompt_id, model_name):
+def save_response_to_json(response, prompt_type ,prompt_id, model_name, jail_prompt='#'):
     # Crea una cartella per salvare i file JSON, se non esiste
     output_dir = '/home/site/wwwroot/responses'  # Percorso all'interno del container
     os.makedirs(output_dir, exist_ok=True)
 
     # Crea un nome file unico basato sul modello e timestamp
    
-    filename = f"response_{model_name}_{prompt_type}_{prompt_id}.json"
+    filename = f"response_{model_name}_{prompt_type}_jail{jail_prompt}_req{prompt_id}.json"
+    
     filepath = os.path.join(output_dir)
     print(filepath)
     file = f"{filepath}/{filename}"
@@ -79,7 +80,7 @@ def save_response_to_json(response, prompt_type ,prompt_id, model_name):
 
     print(f"Risposta salvata in: {filepath}")
 
-def run_experiments(df_type, selected_data): 
+def run_experiments(df_type, selected_data, selected_jail=None): 
     chat_history = []
     saved_chat = []
     download_chat = []
@@ -91,7 +92,8 @@ def run_experiments(df_type, selected_data):
     # if df_type==True is jailbreak mode
     if df_type: 
         type_ = "jailbreak"
-        for jail in selected_data: 
+        #for jail in selected_data: 
+        for i,jail in enumerate(selected_data): 
             for index,prompt in enumerate(df_nojailbreak["text"]):
             #for prompt in df_nojailbreak['text']:
                 saved_chat = [] 
@@ -125,7 +127,7 @@ def run_experiments(df_type, selected_data):
                 saved_chat.append({"role": "model", "parts": response})
                 st.session_state.messages.append({"role": "model", "parts": response})
                 
-                save_response_to_json(saved_chat, type_ ,index, 'gemini')
+                save_response_to_json(saved_chat, type_ ,index, 'gemini', selected_jail[i])
                 st.session_state.messages = []
                 saved_chat = []
 
@@ -153,7 +155,7 @@ def run_experiments(df_type, selected_data):
                 download_chat.append({"role": "assistant", "content": response})
                 saved_chat.append({"role": "assistant", "content": response})
                 
-                save_response_to_json(saved_chat, type_ ,index, 'gpt')
+                save_response_to_json(saved_chat, type_ ,index, 'gpt', selected_jail[i])
                 st.session_state.messages = []
                 saved_chat = []
 
@@ -180,7 +182,7 @@ def run_experiments(df_type, selected_data):
                 download_chat.append({"role": "assistant", "content": response})
                 saved_chat.append({"role": "assistant", "content": response})
                 
-                save_response_to_json(saved_chat, type_ ,index, 'claude')
+                save_response_to_json(saved_chat, type_ ,index, 'claude', selected_jail[i])
                 st.session_state.messages = []  
                 saved_chat = []
 
@@ -209,7 +211,7 @@ def run_experiments(df_type, selected_data):
                     download_chat.append({"role": "assistant", "content": response})
                     saved_chat.append({"role": "assistant", "content": response})
                     
-                    save_response_to_json(saved_chat, type_ ,index, model)
+                    save_response_to_json(saved_chat, type_ ,index, model, selected_jail[i])
                     st.session_state.messages = []
                     saved_chat = []
                 
@@ -235,7 +237,7 @@ def run_experiments(df_type, selected_data):
             download_chat.append({"role": "assistant", "content": response})
             saved_chat.append({"role": "assistant", "content": response})
             
-            save_response_to_json(saved_chat, df_type ,index, 'gemini')
+            save_response_to_json(saved_chat, type_ ,index, 'gemini')
             st.session_state.messages.append({"role": "assistant", "content": response})
             st.session_state.messages = []
 
@@ -253,7 +255,7 @@ def run_experiments(df_type, selected_data):
             saved_chat.append({"role": "assistant", "content": response})
             st.session_state.messages.append({"role": "assistant", "content": response})
             
-            save_response_to_json(saved_chat, df_type ,index, 'gpt')
+            save_response_to_json(saved_chat, type_ ,index, 'gpt')
             st.session_state.messages = []
             saved_chat = []
 
@@ -271,7 +273,7 @@ def run_experiments(df_type, selected_data):
             saved_chat.append({"role": "assistant", "content": response})
             st.session_state.messages.append({"role": "assistant", "content": response})
             
-            save_response_to_json(saved_chat, df_type ,index, 'claude')
+            save_response_to_json(saved_chat, type_ ,index, 'claude')
             st.session_state.messages = []
             saved_chat = []
 
@@ -290,13 +292,13 @@ def run_experiments(df_type, selected_data):
                 download_chat.append({"role": "assistant", "content": response})
                 saved_chat.append({"role": "assistant", "content": response})
                 
-                save_response_to_json(saved_chat, df_type ,index, model)
+                save_response_to_json(saved_chat, type_ ,index, model)
                 st.session_state.messages = []
                 saved_chat = []
            
 
     st.markdown("**Experiments completed!** \n")
-    st.write("Results saved in the responses folder.Download it! \n")
+    st.write("Results saved in the results folder.Download it! \n")
     #st.write(download_chat)
 
 
@@ -322,6 +324,7 @@ if df_type:
     st.divider()
 
     selected_jail = jail[jail['selected']].index.tolist()
+
     if selected_jail:
         selected_data = (jail.loc[selected_jail])  # Seleziona le righe con le checkbox attivate
         st.markdown("**Selected jailbreak prompts:** \n")
@@ -332,6 +335,7 @@ if df_type:
 
 else: 
     st.markdown("### Requests")
+    selected_jail = None
     requests = st.data_editor(df_nojailbreak, width=1000, height=500, hide_index=True)
     selected_data = df_nojailbreak
     st.markdown("**Selected all requests prompts!** \n")
@@ -367,4 +371,4 @@ with col2:
 st.divider()
 
 if button:
-    run_experiments(df_type, selected_data)
+    run_experiments(df_type, selected_data, selected_jail)
