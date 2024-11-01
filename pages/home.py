@@ -43,7 +43,7 @@ df = utils.file_to_dataframe(filepath)
 st.dataframe(df)  # Same as st.write(df)
 
 st.write("You can select a single large language model from the sidebar and start interacting with it, or in alternative you can go to the Jailbreak Prompt page and start interacting with multiple models and multiple prompts. \n")
-st.page_link("pages/jailbreak.py", label="Jailbreak Page", icon=":material/receipt_long:")
+st.page_link("pages/experiments.py", label="Jailbreak Page", icon=":material/receipt_long:")
 
 st.write("In the Results page the results of my experiments will be shown, in order to understand the capabilities of the models and their limits. \n")
 st.page_link("pages/results.py", label="Results Page", icon=":material/output:")

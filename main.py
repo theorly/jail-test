@@ -1,6 +1,9 @@
 import streamlit as st
 from streamlit_lottie import st_lottie
 
+st.logo("docs/logo.png", icon_image="docs/logo.png", link = "https://jailbreak-gpt.azurewebsites.net/")
+
+
 #col1, col2 = st.columns([1, 1]) 
 col1,col2,col3 = st.columns([1,1,1], vertical_alignment="center")
 with col1:
@@ -24,9 +27,9 @@ pages = {
     ],
     "Resources" : [
         st.Page("pages/TokenCount.py", title="Token Counts", icon=":material/filter_3:"),
-        st.Page("pages/jailbreak.py", title="Jailbreak Prompts", icon=":material/receipt_long:"),
+        #st.Page("pages/jailbreak.py", title="Jailbreak Prompts", icon=":material/receipt_long:"),
+        st.Page("pages/experiments.py", title="Experiments", icon=":material/whatshot:"),
         st.Page("pages/results.py", title="Results", icon=":material/output:"),
-        st.Page("pages/experiments.py", title="Experiments", icon=":material/whatshot:")
     ],
     "Info": [
         st.Page("pages/info.py", title="Info", icon=":material/info:")
