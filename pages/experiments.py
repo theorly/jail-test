@@ -63,13 +63,13 @@ def zip_folder(folder_path):
 
 def save_response_to_json(response, prompt_type ,prompt_id, model_name, jail_prompt='#'):
     # Crea una cartella per salvare i file JSON, se non esiste
-    datetime = datetime.now()
+    current_time = datetime.now()
     output_dir = '/home/site/wwwroot/responses'  # Percorso all'interno del container
     os.makedirs(output_dir, exist_ok=True)
 
     # Crea un nome file unico basato sul modello e sul prompt
    
-    filename = f"{model_name}_{prompt_type}_jail{jail_prompt}_req{prompt_id}_{datetime.day}_{datetime.month}_{datetime.hour}:{datetime.minute}.json"
+    filename = f"{model_name}_{prompt_type}_jail{jail_prompt}_req{prompt_id}_{current_time.day}_{current_time.month}_{current_time.hour}:{current_time.minute}.json"
     
     filepath = os.path.join(output_dir)
     print(filepath)
