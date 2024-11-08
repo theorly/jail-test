@@ -12,3 +12,4 @@ tokenizers
 openai
 openpyxl
 streamlit-timeline
+datetime
