@@ -12,9 +12,9 @@ from pages.gemini import gemini_response
 from pages.gpt import gpt_response
 from pages.claude import claude_response
 
-filepath_jailbreak = 'prompts/test.xlsx'
+filepath_jailbreak = 'prompts/jail_prompts.xlsx'
 #filepath_nojailbreak = 'prompts/nojailbreak.xlsx'
-filepath_nojailbreak = 'prompts/test_test.xlsx'
+filepath_nojailbreak = 'prompts/requests.xlsx'
 folder_to_zip = '/home/site/wwwroot/responses'
 df_jailbreak = utils.file_to_dataframe(filepath_jailbreak)
 df_nojailbreak = utils.file_to_dataframe(filepath_nojailbreak) 
@@ -65,7 +65,7 @@ def save_response_to_json(response, prompt_type ,prompt_id, model_name, jail_pro
     output_dir = '/home/site/wwwroot/responses'  # Percorso all'interno del container
     os.makedirs(output_dir, exist_ok=True)
 
-    # Crea un nome file unico basato sul modello e timestamp
+    # Crea un nome file unico basato sul modello e sul prompt
    
     filename = f"response_{model_name}_{prompt_type}_jail{jail_prompt}_req{prompt_id}.json"
     
@@ -298,7 +298,7 @@ def run_experiments(df_type, selected_data, selected_jail=None):
            
 
     st.markdown("**Experiments completed!** \n")
-    st.write("Results saved in the results folder.Download it! \n")
+    st.write("Results stored in the results folder! \n")
     #st.write(download_chat)
 
 
@@ -306,6 +306,12 @@ def run_experiments(df_type, selected_data, selected_jail=None):
 
 st.subheader("Jailbreak Prompts")
 
+st.divider() 
+st.markdown("### Guide: \n")
+st.markdown("Select <<Jailbreak mode>> or <<No jailbreak>> with the toggle below. Once chosen, you have to select jailbreak prompts you want to use and then run experiments. \n")
+st.markdown("In the case of jailbreak mode, the system will run the selected jailbreak prompts with the all request prompts. \n")
+st.markdown("In the case of no jailbreak mode, the system will run only the request prompts. \n")
+st.markdown("Once the experiments are completed, they will be saved online and you can download with the button below! \n")
 
 st.divider()
 df_type = st.toggle("Jailbreak experiments", True)
@@ -348,7 +354,7 @@ with col1:
     button = st.button("Run Experiments")
     
 with col2:
-    if st.button("Download Results Folder"):
+    if st.button("Download Results"):
         if os.path.exists(folder_to_zip):
                 zip_file_path = zip_folder(folder_to_zip)
 
