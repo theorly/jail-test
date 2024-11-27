@@ -45,6 +45,8 @@ def display_chat(chat_history):
 def reset_model():
     st.session_state.selected_model = None
     st.session_state.messages = []
+    st.session_state.gpt_messages = []
+    st.session_state.claude_messages = []
     """ 
     st.session_state.options = {"temperature": 0.8,
         "top_p": 0.9,

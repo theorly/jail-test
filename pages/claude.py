@@ -11,11 +11,21 @@ utils.reset_model()
 
 st.subheader(f"Chat with Claude!")
 
+# Initialize chat history
+if "claude_messages" not in st.session_state:
+    st.session_state.claude_messages = []
+# Initialize Claude parameters 
+if "gemini_options" not in st.session_state:
+    st.session_state.gemini_options = {"temperature": 0.1,
+                "top_p": 0.9,
+                "max_output_tokens" : 4096}
+
+
 ANTHROPIC_API_KEY = os.getenv('ANTHROPIC_API_KEY')
 
 client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
 
-def claude_response(): 
+def claude_response(chat_history): 
 
     message = client.messages.create(
                     model="claude-3-5-sonnet-20240620",
@@ -23,13 +33,10 @@ def claude_response():
                     top_p= st.session_state.gemini_options['top_p'],
                     #top_k= st.session_state.options['top_k'],
                     max_tokens= st.session_state.gemini_options['max_output_tokens'],
-                    messages = st.session_state.messages
+                    messages = chat_history
             )
-    if response.status_code == 200:
-        return message.content[0].text
-    else:
-        st.error("Errore nella risposta di Claude.")
-        return ""
+    
+    return message.content[0].text
     
 @st.dialog("Insert a system prompt")
 def system_prompt_claude(): 
@@ -47,33 +54,20 @@ def system_prompt_claude():
 
 st.divider()
 
-# Initialize chat history
-if "messages" not in st.session_state:
-    st.session_state.messages = []
-# Initialize Claude parameters 
-if "gemini_options" not in st.session_state:
-    st.session_state.gemini_options = {"temperature": 0.1,
-                "top_p": 0.9,
-                "max_output_tokens" : 4096}
-
-# Display chat messages from history on app rerun
-for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
-        st.markdown(message["content"])
 
 if prompt := st.chat_input("Insert your prompt!"):
-            st.session_state.messages.append({"role": "user", "content": prompt})
+            st.session_state.claude_messages.append({"role": "user", "content": prompt})
             with st.chat_message("user"):
                 st.markdown(prompt)
             
             with st.chat_message("assistant"):
-                stream = claude_response()
+                stream = claude_response(st.session_state.claude_messages)
                 response = st.write(stream)
-            st.session_state.messages.append({"role": "assistant", "content": stream})
+            st.session_state.claude_messages.append({"role": "assistant", "content": stream})
         
 
         # Pulsante per scaricare la cronologia della chat come JSON
-chat_history_json = json.dumps(st.session_state.messages, indent=4)
+chat_history_json = json.dumps(st.session_state.claude_messages, indent=4)
 
 
 st.divider()

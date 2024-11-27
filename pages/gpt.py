@@ -11,23 +11,9 @@ utils.reset_model()
 
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 
-def gpt_response():
-    client = OpenAI()
-    
-    response = client.chat.completions.create(
-        model = "gpt-3.5-turbo",
-        messages = st.session_state.messages,
-        temperature = st.session_state.options["temperature"],
-        max_tokens = st.session_state.options["max_output_tokens"],
-        top_p = st.session_state.options["top_p"],
-        seed = st.session_state.options["seed"]
-    )
-
-    return response.choices[0].message.content
-
 # Initialize chat history
-if "messages" not in st.session_state:
-    st.session_state.messages = []
+if "gpt_messages" not in st.session_state:
+    st.session_state.gpt_messages = []
 # Initialize Gemini parameters 
 if "options" not in st.session_state: 
     st.session_state.options = {"temperature": 0.2,
@@ -38,18 +24,34 @@ if "options" not in st.session_state:
 if "system_instruction" not in st.session_state:
     st.session_state.system_instruction = None
 
+def gpt_response():
+    client = OpenAI()
+    
+    response = client.chat.completions.create(
+        model = "gpt-3.5-turbo",
+        messages = st.session_state.gpt_messages,
+        temperature = st.session_state.options["temperature"],
+        max_tokens = st.session_state.options["max_output_tokens"],
+        top_p = st.session_state.options["top_p"],
+        seed = st.session_state.options["seed"]
+    )
+
+    return response.choices[0].message.content
+
+
+
 
 st.subheader("Talk with ChatGPT")
 
 st.divider()
 
 # Display chat messages from history on app rerun
-for message in st.session_state.messages:
+for message in st.session_state.gpt_messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
 if prompt := st.chat_input("Insert your prompt!"):
-            st.session_state.messages.append({"role": "user", "content": prompt})
+            st.session_state.gpt_messages.append({"role": "user", "content": prompt})
             with st.chat_message("user"):
                 st.markdown(prompt)
             
@@ -57,11 +59,11 @@ if prompt := st.chat_input("Insert your prompt!"):
                    
                 stream = gpt_response()
                 response = st.write(stream)
-            st.session_state.messages.append({"role": "assistant", "content": stream})
+            st.session_state.gpt_messages.append({"role": "assistant", "content": stream})
         
 
         # Pulsante per scaricare la cronologia della chat come JSON
-chat_history_json = json.dumps(st.session_state.messages, indent=4)
+chat_history_json = json.dumps(st.session_state.gpt_messages, indent=4)
 
 
 st.divider()
