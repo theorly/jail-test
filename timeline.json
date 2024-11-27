@@ -49,6 +49,26 @@
           "headline": "Deploy Jailbreak-GPT ",
           "text": "Definitive deploy of Jailbreak-GPT Tool"
         }
+      }, 
+      {
+        "start_date": {
+          "year": "2024",
+          "month":"10"
+        },
+        "text": {
+          "headline": "PROMPTS COLLECTION",
+          "text": "<p>Jailbreak prompts collection and requests prompts for experiments</p>"
+        }
+      },
+      {
+        "start_date": {
+          "year": "2024",
+          "month":"11"
+        },
+        "text": {
+          "headline": "EXPERIMENTS",
+          "text": "<p>Running all experiments for each model</p>"
+        }
       }
     ]
 }

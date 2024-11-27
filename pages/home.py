@@ -7,7 +7,6 @@ import openpyxl as px
 from utils import utils
 from streamlit_timeline import timeline
 
-
 filepath = 'prompts/jailbreak-prompt.xlsx'
 
 st.subheader("Home Page")
@@ -52,3 +51,5 @@ st.divider()
 
 st.text("There are also the Info page, where you can find more information about \n the project and the author and the <<Token Count>> page, where you can analyze \n the token count for each prompt in order to understand the complexity of the \n prompt and its cost. \n")
 st.page_link("pages/info.py", label="INFO", icon=":material/info:")
+
+
