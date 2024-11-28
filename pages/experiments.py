@@ -142,8 +142,8 @@ def run_experiments(df_type, selected_data, selected_jail=None):
                 #run ChatGPT    
                 download_chat.append({"model": 'gpt-3.5-turbo', "options": st.session_state.options})
                 saved_chat.append({"model": 'gpt-3.5-turbo', "options": st.session_state.options})
-                st.session_state.messages.append({"role": "user", "parts": jail})
-                st.session_state.gpt_messages({"role": "user", "parts": jail})
+                st.session_state.messages.append({"role": "user", "content": jail})
+                st.session_state.gpt_messages({"role": "user", "content": jail})
                 download_chat.append({"role": "user", "content": jail})
                 saved_chat.append({"role": "user", "content": jail})
                 try:
@@ -155,8 +155,8 @@ def run_experiments(df_type, selected_data, selected_jail=None):
                 st.session_state.gpt_messages({"role": "assistant", "content": response})
                 saved_chat.append({"role": "assistant", "content": response})
                 
-                st.session_state.messages.append({"role": "user", "parts": prompt})
-                st.session_state.gpt_messages({"role": "user", "parts": prompt})
+                st.session_state.messages.append({"role": "user", "content": prompt})
+                st.session_state.gpt_messages({"role": "user", "content": prompt})
                 download_chat.append({"role": "user", "content": prompt})
                 saved_chat.append({"role": "user", "content": prompt})
                 try:
@@ -177,8 +177,8 @@ def run_experiments(df_type, selected_data, selected_jail=None):
                 #run Claude
                 download_chat.append({"model": 'claude-3-5-sonnet-20240620', "options": st.session_state.gemini_options})
                 saved_chat.append({"model": 'claude-3-5-sonnet-20240620', "options": st.session_state.gemini_options})
-                st.session_state.messages.append({"role": "user", "parts": jail})
-                st.session_state.claude_messages({"role": "user", "parts": jail})
+                st.session_state.messages.append({"role": "user", "content": jail})
+                st.session_state.claude_messages({"role": "user", "content": jail})
                 download_chat.append({"role": "user", "content": jail})
                 saved_chat.append({"role": "user", "content": jail})
                 try:
@@ -189,8 +189,8 @@ def run_experiments(df_type, selected_data, selected_jail=None):
                 saved_chat.append({"role": "assistant", "content": response})
                 st.session_state.messages.append({"role": "assistant", "content": response})
                 st.session_state.claude_messages({"role": "assistant", "content": response})
-                st.session_state.messages.append({"role": "user", "parts": prompt})
-                st.session_state.claude_messages({"role": "user", "parts": prompt})
+                st.session_state.messages.append({"role": "user", "content": prompt})
+                st.session_state.claude_messages({"role": "user", "content": prompt})
                 download_chat.append({"role": "user", "content": prompt})
                 saved_chat.append({"role": "user", "content": prompt})
                 try:
