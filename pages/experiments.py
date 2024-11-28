@@ -103,6 +103,8 @@ def run_experiments(df_type, selected_data, selected_jail=None):
             #for prompt in df_nojailbreak['text']:
                 saved_chat = [] 
                 st.session_state.messages = []
+                st.session_state.messages.gpt_messages = []
+                st.session_state.messages.claude_messages = []
                 # append model name and options
                 download_chat.append({"model": 'gemini-1.5-flash', "options": st.session_state.gemini_options})
                 saved_chat.append({"model": 'gemini-1.5-flash', "options": st.session_state.gemini_options})
