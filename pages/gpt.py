@@ -7,9 +7,10 @@ from dotenv import load_dotenv
 from openai import OpenAI
 
 load_dotenv()
-utils.reset_model()
 
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
+
+client = OpenAI()
 
 # Initialize chat history
 if "gpt_messages" not in st.session_state:
@@ -24,12 +25,11 @@ if "options" not in st.session_state:
 if "system_instruction" not in st.session_state:
     st.session_state.system_instruction = None
 
-def gpt_response():
-    client = OpenAI()
+def gpt_response(chat_history):
     
     response = client.chat.completions.create(
         model = "gpt-3.5-turbo",
-        messages = st.session_state.gpt_messages,
+        messages = chat_history,
         temperature = st.session_state.options["temperature"],
         max_tokens = st.session_state.options["max_output_tokens"],
         top_p = st.session_state.options["top_p"],
@@ -45,10 +45,6 @@ st.subheader("Talk with ChatGPT")
 
 st.divider()
 
-# Display chat messages from history on app rerun
-for message in st.session_state.gpt_messages:
-    with st.chat_message(message["role"]):
-        st.markdown(message["content"])
 
 if prompt := st.chat_input("Insert your prompt!"):
             st.session_state.gpt_messages.append({"role": "user", "content": prompt})
@@ -57,7 +53,7 @@ if prompt := st.chat_input("Insert your prompt!"):
             
             with st.chat_message("assistant"):
                    
-                stream = gpt_response()
+                stream = gpt_response(st.session_state.gpt_messages)
                 response = st.write(stream)
             st.session_state.gpt_messages.append({"role": "assistant", "content": stream})
         
