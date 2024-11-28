@@ -7,7 +7,6 @@ import json
 from dotenv import load_dotenv
 
 load_dotenv()
-utils.reset_model()
 
 st.subheader(f"Chat with Claude!")
 
@@ -25,7 +24,7 @@ ANTHROPIC_API_KEY = os.getenv('ANTHROPIC_API_KEY')
 
 client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
 
-def claude_response(chat_history): 
+def claude_response(): 
 
     message = client.messages.create(
                     model="claude-3-5-sonnet-20240620",
@@ -33,7 +32,7 @@ def claude_response(chat_history):
                     top_p= st.session_state.gemini_options['top_p'],
                     #top_k= st.session_state.options['top_k'],
                     max_tokens= st.session_state.gemini_options['max_output_tokens'],
-                    messages = chat_history
+                    messages = st.session_state.claude_messages
             )
     
     return message.content[0].text
@@ -61,7 +60,7 @@ if prompt := st.chat_input("Insert your prompt!"):
                 st.markdown(prompt)
             
             with st.chat_message("assistant"):
-                stream = claude_response(st.session_state.claude_messages)
+                stream = claude_response()
                 response = st.write(stream)
             st.session_state.claude_messages.append({"role": "assistant", "content": stream})
         
