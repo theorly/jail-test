@@ -27,7 +27,7 @@ def get_response(model, chat_history, options):
     #url = f'http://localhost:11434/api/chat'
     #url = f'http://20.54.80.58:11434/api/chat'
     url = f'http://4.232.73.92/api/chat'
-    payload = {'model' : model, 'messages': chat_history , "options" : options, "stream": False}
+    payload = {'model' : model, 'messages': chat_history , "options" : options, "stream": False, 'keep_alive' : 0}
     headers = {'Content-Type': 'application/json'}
     response = requests.post(url, headers=headers, json=payload)
     if response.status_code == 200:
