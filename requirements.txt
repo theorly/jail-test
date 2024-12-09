@@ -12,3 +12,5 @@ tokenizers
 openai
 openpyxl
 streamlit-timeline
+seaborn
+matplotlib

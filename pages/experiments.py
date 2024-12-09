@@ -9,12 +9,23 @@ import os
 import zipfile
 from datetime import datetime
 from utils import utils
-from pages.gemini import gemini_response
-from pages.gpt import gpt_response
-from pages.claude import claude_response
+import google.generativeai as genai
+from google.generativeai.types import HarmCategory, HarmBlockThreshold
+from openai import OpenAI
+import anthropic 
 
+# load API KEYS 
+OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
+ANTHROPIC_API_KEY = os.getenv('ANTHROPIC_API_KEY')
+GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
+
+# initialize model clients
+client_AI = OpenAI()
+client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
+genai.configure(api_key=GEMINI_API_KEY)
+
+# def paths 
 filepath_jailbreak = 'prompts/jail_prompts.xlsx'
-#filepath_nojailbreak = 'prompts/nojailbreak.xlsx'
 filepath_nojailbreak = 'prompts/requests.xlsx'
 folder_to_zip = '/home/site/wwwroot/responses'
 df_jailbreak = utils.file_to_dataframe(filepath_jailbreak)
@@ -50,8 +61,51 @@ gemini_options = {"temperature": 0.1,
                 "top_p": 0.9,
                 "max_output_tokens" : 4096}
 
-#function to zip results folder
+def gemini_response(): 
+    model = genai.GenerativeModel(model_name="gemini-1.5-flash", 
+                    generation_config= st.session_state.gemini_options,
+                    system_instruction= st.session_state.system_instruction,
+                    safety_settings={ 
+                          HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,
+                          HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,
+                          HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_NONE,
+                          HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_NONE,
+                    }
+                )
 
+    chat = model.start_chat(history=st.session_state.messages)
+
+    response = chat.send_message(st.session_state.messages[-1]['parts']) 
+
+    return response.text
+
+def claude_response(): 
+
+    message = client.messages.create(
+                    model="claude-3-5-sonnet-20240620",
+                    temperature= st.session_state.gemini_options['temperature'],
+                    top_p= st.session_state.gemini_options['top_p'],
+                    #top_k= st.session_state.options['top_k'],
+                    max_tokens= st.session_state.gemini_options['max_output_tokens'],
+                    messages = st.session_state.claude_messages
+            )
+    
+    return message.content[0].text
+    
+def gpt_response():
+    
+    response = client_AI.chat.completions.create(
+        model = "gpt-3.5-turbo",
+        messages = st.session_state.gpt_messages,
+        temperature = st.session_state.options["temperature"],
+        max_tokens = st.session_state.options["max_output_tokens"],
+        top_p = st.session_state.options["top_p"],
+        seed = st.session_state.options["seed"]
+    )
+
+    return response.choices[0].message.content
+
+#function to zip results folder
 def zip_folder(folder_path):
     """Crea un file zip dalla cartella specificata."""
     zip_name = f"{folder_path.rstrip('/').split('/')[-1]}"  # Usa il nome della cartella
@@ -84,6 +138,7 @@ def save_response_to_json(response, prompt_type ,prompt_id, model_name, jail_pro
         json.dump(response, json_file, indent=4)
 
     print(f"Risposta salvata in: {filepath}")
+
 
 def run_experiments(df_type, selected_data, selected_jail=None): 
     chat_history = []
