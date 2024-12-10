@@ -69,6 +69,16 @@
           "headline": "EXPERIMENTS",
           "text": "<p>Running all experiments for each model</p>"
         }
+      }, 
+      {
+        "start_date": {
+          "year": "2024",
+          "month":"12"
+        },
+        "text": {
+          "headline": "RESULTS ANALYSIS",
+          "text": "<p>Once collected the results, they have to be analyzed.</p>"
+        }
       }
     ]
 }

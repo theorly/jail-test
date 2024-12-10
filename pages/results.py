@@ -10,6 +10,12 @@ import seaborn as sns
 st.subheader("Results")
 
 st.markdown("**The results of my experiments will be displayed here.** \n")
+st.markdown("""Questi grafici sono progettati per fornire un'analisi completa e dettagliata delle risposte dei modelli LLM. I grafici evidenziano:  
+1. **Performance Generale**: Successo del jailbreaking e presenza di disclaimer.  
+2. **Qualità delle Risposte**: Aderenza, consistenza e gravità.  
+3. **Confronti e Relazioni**: Differenze tra modelli e correlazioni tra metriche.  
+
+Questa combinazione di visualizzazioni permette di ottenere insight approfonditi sulle prestazioni dei modelli e guidare le decisioni per ulteriori miglioramenti. """)
 
 results_folder = '/home/site/wwwroot/responses/analysis'
 #results_folder = '/Users/orlando/Desktop/Tesi/TEST/jail-test/pages/prova/analysis'
@@ -58,11 +64,21 @@ def load_json_data(folder_path):
 
 # Funzione per plottare i grafici delle metriche
 def plot_metrics(df):
-    # Impostazioni per i grafici
     sns.set(style="whitegrid")
     
-    # Grafico per il Successo del Jailbreaking
-    st.subheader("Successo del Jailbreaking")
+    # Grafico 1: Successo del Jailbreaking (Conteggio)
+    st.markdown("""**1. Successo del Jailbreaking**  
+**Descrizione**:  
+- Questo grafico mostra il conteggio dei casi in cui il modello ha avuto successo o meno nel rispondere ai prompt di jailbreak.  
+- I valori `True` e `False` rappresentano rispettivamente il successo o il fallimento del jailbreak.  
+
+**Motivazione**:  
+È importante visualizzare quanto spesso un modello elude le sue policy di sicurezza. Questo grafico fornisce un confronto chiaro e immediato tra successo e fallimento.
+
+**Cosa Mostra**:  
+- La robustezza dei modelli nel prevenire il jailbreaking.  
+- Se esiste un modello particolarmente vulnerabile rispetto agli altri.""")
+    
     fig, ax = plt.subplots(figsize=(8, 6))
     sns.countplot(x="jailbreak_success", data=df, palette="coolwarm")
     ax.set_title("Successo del Jailbreaking")
@@ -70,45 +86,143 @@ def plot_metrics(df):
     ax.set_ylabel("Conteggio")
     st.pyplot(fig)
     
-    # Grafico per Aderenza allo stile
-    st.subheader("Aderenza allo Stile Richiesto")
+    # Grafico 2: Distribuzione Aderenza allo Stile
+    st.markdown("""**2. Distribuzione Aderenza allo Stile**  
+**Descrizione**:  
+- Un grafico che rappresenta la distribuzione dei punteggi assegnati all'aderenza allo stile richiesto dai prompt.  
+- Utilizza un istogramma arricchito con la densità (KDE) per visualizzare la forma della distribuzione.  
+
+**Motivazione**:  
+L'aderenza allo stile è una metrica importante per valutare se il modello segue le istruzioni stilistiche fornite nei prompt di jailbreak. Una distribuzione ben definita può indicare coerenza nelle risposte.
+
+**Cosa Mostra**:  
+- La frequenza dei punteggi su una scala da 1 a 5.  
+- La tendenza del modello a rispettare o meno lo stile richiesto.
+""")
     fig, ax = plt.subplots(figsize=(8, 6))
-    sns.boxplot(x="style_consistency", data=df, palette="Blues")
-    ax.set_title("Aderenza allo Stile Richiesto")
-    ax.set_xlabel("Punteggio Aderenza Stile (1-5)")
-    ax.set_ylabel("Conteggio")
+    sns.histplot(df['style_consistency'], bins=5, kde=True, color="blue")
+    ax.set_title("Distribuzione dei Punteggi di Aderenza allo Stile")
+    ax.set_xlabel("Aderenza allo Stile (1-5)")
+    ax.set_ylabel("Frequenza")
     st.pyplot(fig)
     
-    # Grafico per Consistenza
-    st.subheader("Consistenza della Risposta")
+    # Grafico 3: Distribuzione Consistenza
+    st.markdown("""**3. Distribuzione Consistenza (Istogramma con KDE)**  
+**Descrizione**:  
+- Questo grafico rappresenta la distribuzione dei punteggi di consistenza, ovvero la capacità del modello di rispondere direttamente alla richiesta senza essere evasivo.  
+
+**Motivazione**:  
+La consistenza delle risposte è una metrica chiave per comprendere se il modello è in grado di soddisfare la richiesta senza eludere la domanda, pur rispettando le sue policy.
+
+**Cosa Mostra**:  
+- La frequenza dei punteggi di consistenza (1-5).  
+- La capacità dei modelli di fornire risposte precise.
+""")
     fig, ax = plt.subplots(figsize=(8, 6))
-    sns.boxplot(x="consistency", data=df, palette="Set2")
-    ax.set_title("Consistenza della Risposta")
-    ax.set_xlabel("Punteggio Consistenza (1-5)")
-    ax.set_ylabel("Conteggio")
+    sns.histplot(df['consistency'], bins=5, kde=True, color="green")
+    ax.set_title("Distribuzione dei Punteggi di Consistenza")
+    ax.set_xlabel("Consistenza (1-5)")
+    ax.set_ylabel("Frequenza")
     st.pyplot(fig)
 
-    # Grafico per la presenza di Disclaimer
-    st.subheader("Presenza di Disclaimer")
+    # Grafico 4: Distribuzione Gravità della Risposta
+    st.markdown("""**4. Distribuzione Gravità della Risposta**  
+**Descrizione**:  
+- Mostra come si distribuiscono i punteggi di gravità assegnati alle risposte dei modelli, indicando il livello di severità o permissività.  
+
+**Motivazione**:  
+La gravità della risposta è un indicatore del livello di moderazione applicato dal modello nelle sue risposte, in particolare per richieste eticamente discutibili.
+
+**Cosa Mostra**:  
+- Se i modelli tendono a rispondere in modo più permissivo o restrittivo.  
+- Le variazioni di severità nelle risposte. """)
     fig, ax = plt.subplots(figsize=(8, 6))
-    sns.countplot(x="disclaimer", data=df, palette="pastel")
-    ax.set_title("Presenza di Disclaimer")
-    ax.set_xlabel("Disclaimer Presente (True/False)")
+    sns.histplot(df['severity'], bins=5, kde=True, color="red")
+    ax.set_title("Distribuzione dei Punteggi di Gravità")
+    ax.set_xlabel("Gravità (1-5)")
+    ax.set_ylabel("Frequenza")
+    st.pyplot(fig)
+    
+    # Grafico 5: Disclaimer per Modello
+    st.markdown("""**5. Presenza di Disclaimer per Modello**  
+**Descrizione**:  
+- Confronta la presenza di disclaimer nelle risposte (`True`/`False`) per ciascun modello.  
+- Ogni barra rappresenta il conteggio di risposte con o senza disclaimer per un modello specifico.  
+
+**Motivazione**:  
+I disclaimer sono un indicatore di responsabilità etica, mostrando come i modelli cercano di prevenire potenziali danni.
+
+**Cosa Mostra**:  
+- La frequenza con cui ciascun modello include disclaimer.  
+- La tendenza di ciascun modello a enfatizzare considerazioni etiche. """)
+    fig, ax = plt.subplots(figsize=(8, 6))
+    sns.countplot(x="model_name", hue="disclaimer", data=df, palette="pastel")
+    ax.set_title("Presenza di Disclaimer per Modello")
+    ax.set_xlabel("Modello")
     ax.set_ylabel("Conteggio")
+    ax.legend(title="Disclaimer", loc="upper right")
     st.pyplot(fig)
 
-    # Grafico per la Gravità della Risposta
-    st.subheader("Gravità della Risposta")
+    # Grafico 6: Distribuzione del Successo del Jailbreaking per Modello
+    st.markdown("""**6. Distribuzione del Successo del Jailbreaking per Modello**  
+**Descrizione**:  
+- Mostra la percentuale di successo dei jailbreak per ciascun modello.  
+
+**Motivazione**:  
+È utile per identificare quali modelli sono più vulnerabili al jailbreaking e quindi meno robusti.
+
+**Cosa Mostra**:  
+- Il livello di successo dei jailbreak su diversi modelli.  
+- Quali modelli richiedono maggiore attenzione per mitigare i prompt di jailbreak. """)
     fig, ax = plt.subplots(figsize=(8, 6))
-    sns.boxplot(x="severity", data=df, palette="coolwarm")
-    ax.set_title("Gravità della Risposta")
-    ax.set_xlabel("Punteggio Gravità (1-5)")
-    ax.set_ylabel("Conteggio")
+    sns.barplot(x="model_name", y="jailbreak_success", data=df, ci=None, palette="coolwarm")
+    ax.set_title("Distribuzione del Successo del Jailbreaking per Modello")
+    ax.set_xlabel("Modello")
+    ax.set_ylabel("Percentuale di Successo")
+    st.pyplot(fig)
+    
+    # Grafico 7: Matrice di Correlazione tra le Metriche
+    st.markdown("""**7. Matrice di Correlazione tra le Metriche**  
+**Descrizione**:  
+- Una matrice che mostra le correlazioni tra le metriche numeriche (aderenza allo stile, consistenza e gravità).  
+
+**Motivazione**:  
+Le correlazioni aiutano a individuare relazioni significative tra le metriche. Ad esempio, un'alta correlazione tra "gravità" e "consistenza" potrebbe suggerire che risposte più consistenti tendono a essere più severe.
+
+**Cosa Mostra**:  
+- Relazioni positive o negative tra le metriche.  
+- Quali metriche sono più strettamente correlate. """)
+    fig, ax = plt.subplots(figsize=(10, 8))
+    corr = df[['style_consistency', 'consistency', 'severity']].corr()
+    sns.heatmap(corr, annot=True, cmap="coolwarm", vmin=-1, vmax=1)
+    ax.set_title("Matrice di Correlazione")
+    st.pyplot(fig)
+    
+    # Grafico 8: Boxplot Comparativo delle Metriche per Modello
+    st.markdown("""**8. Boxplot Comparativo delle Metriche per Modello**  
+**Descrizione**:  
+- Un grafico che mostra la distribuzione di tre metriche principali (aderenza allo stile, consistenza, gravità) per ciascun modello.  
+
+**Motivazione**:  
+Un boxplot comparativo permette di confrontare i modelli in termini di performance su più dimensioni contemporaneamente.
+
+**Cosa Mostra**:  
+- La variabilità delle metriche per ogni modello.  
+- Se esistono differenze significative tra i modelli su una metrica specifica. """)
+    fig, ax = plt.subplots(figsize=(12, 6))
+    melted_df = df.melt(id_vars=['model_name'], value_vars=['style_consistency', 'consistency', 'severity'],
+                        var_name='Metrica', value_name='Valore')
+    sns.boxplot(x="model_name", y="Valore", hue="Metrica", data=melted_df, palette="Set2")
+    ax.set_title("Distribuzione delle Metriche per Modello")
+    ax.set_xlabel("Modello")
+    ax.set_ylabel("Valore della Metrica")
     st.pyplot(fig)
 
     
 
 df = load_json_data(results_folder)
+st.markdown(f"**Numero di record: {len(df)}**")
 st.dataframe(df)
 # Visualizza i grafici per l'analisi delle metriche
 plot_metrics(df)
+
