@@ -161,106 +161,108 @@ def run_experiments(df_type, selected_data, selected_jail=None):
                 st.session_state.gpt_messages = []
                 st.session_state.claude_messages = []
                 # append model name and options
-                download_chat.append({"model": 'gemini-1.5-flash', "options": st.session_state.gemini_options})
-                saved_chat.append({"model": 'gemini-1.5-flash', "options": st.session_state.gemini_options})
-                # append jail prompt to chat
-                st.session_state.messages.append({"role": "user", "parts": jail})
-                download_chat.append({"role": "user", "parts": jail})
-                saved_chat.append({"role": "user", "parts": jail})
-                try:
-                    response = gemini_response()
-                except:
-                    response = "Error in the Gemini response"
-                #append risposta al jail prompt 
-                download_chat.append({"role": "model", "parts": response})
-                saved_chat.append({"role": "model", "parts": response})
-                st.session_state.messages.append({"role": "model", "parts": response})
-
-                #run requests! 
-                st.session_state.messages.append({"role": "user", "parts": prompt})
-                download_chat.append({"role": "user", "parts": prompt})
-                saved_chat.append({"role": "user", "parts": prompt})
-                try:
-                    response = gemini_response()
-                except:
-                    response = "Error in the Gemini response"
-                #append risposta alla request 
-                download_chat.append({"role": "model", "parts": response})
-                saved_chat.append({"role": "model", "parts": response})
-                st.session_state.messages.append({"role": "model", "parts": response})
+                if selected_models == "gemini-1.5-flash":
+                    download_chat.append({"model": 'gemini-1.5-flash', "options": st.session_state.gemini_options})
+                    saved_chat.append({"model": 'gemini-1.5-flash', "options": st.session_state.gemini_options})
+                    # append jail prompt to chat
+                    st.session_state.messages.append({"role": "user", "parts": jail})
+                    download_chat.append({"role": "user", "parts": jail})
+                    saved_chat.append({"role": "user", "parts": jail})
+                    try:
+                        response = gemini_response()
+                    except:
+                        response = "Error in the Gemini response"
+                    #append risposta al jail prompt 
+                    download_chat.append({"role": "model", "parts": response})
+                    saved_chat.append({"role": "model", "parts": response})
+                    st.session_state.messages.append({"role": "model", "parts": response})
                 
-                save_response_to_json(saved_chat, type_ ,index, 'gemini', selected_jail[i])
-                st.session_state.messages = []
-                saved_chat = []
+                    #run requests! 
+                    st.session_state.messages.append({"role": "user", "parts": prompt})
+                    download_chat.append({"role": "user", "parts": prompt})
+                    saved_chat.append({"role": "user", "parts": prompt})
+                    try:
+                        response = gemini_response()
+                    except:
+                        response = "Error in the Gemini response"
+                    #append risposta alla request 
+                    download_chat.append({"role": "model", "parts": response})
+                    saved_chat.append({"role": "model", "parts": response})
+                    st.session_state.messages.append({"role": "model", "parts": response})
+                    
+                    save_response_to_json(saved_chat, type_ ,index, 'gemini', selected_jail[i])
+                    st.session_state.messages = []
+                    saved_chat = []
 
+                if selected_models == "gpt-3.5-turbo":
+                    #run ChatGPT    
+                    download_chat.append({"model": 'gpt-3.5-turbo', "options": st.session_state.options})
+                    saved_chat.append({"model": 'gpt-3.5-turbo', "options": st.session_state.options})
+                    st.session_state.messages.append({"role": "user", "content": jail})
+                    st.session_state.gpt_messages.append({"role": "user", "content": jail})
+                    download_chat.append({"role": "user", "content": jail})
+                    saved_chat.append({"role": "user", "content": jail})
+                    try:
+                        response = gpt_response()
+                    except:
+                        response = "Error in the ChatGPT response"
+                    download_chat.append({"role": "assistant", "content": response})
+                    st.session_state.messages.append({"role": "assistant", "content": response})
+                    st.session_state.gpt_messages.append({"role": "assistant", "content": response})
+                    saved_chat.append({"role": "assistant", "content": response})
+                    
+                    st.session_state.messages.append({"role": "user", "content": prompt})
+                    st.session_state.gpt_messages.append({"role": "user", "content": prompt})
+                    download_chat.append({"role": "user", "content": prompt})
+                    saved_chat.append({"role": "user", "content": prompt})
+                    try:
+                        response = gpt_response()
+                    except:
+                        response = "Error in the ChatGPT response"
+                    download_chat.append({"role": "assistant", "content": response})
+                    st.session_state.messages.append({"role": "assistant", "content": response})
+                    st.session_state.gpt_messages.append({"role": "assistant", "content": response})
+                    saved_chat.append({"role": "assistant", "content": response})
+                    
+                    save_response_to_json(saved_chat, type_ ,index, 'gpt', selected_jail[i])
+                    st.session_state.messages = []
+                    st.session_state.gpt_messages = []
+                    saved_chat = []
 
-                #run ChatGPT    
-                download_chat.append({"model": 'gpt-3.5-turbo', "options": st.session_state.options})
-                saved_chat.append({"model": 'gpt-3.5-turbo', "options": st.session_state.options})
-                st.session_state.messages.append({"role": "user", "content": jail})
-                st.session_state.gpt_messages.append({"role": "user", "content": jail})
-                download_chat.append({"role": "user", "content": jail})
-                saved_chat.append({"role": "user", "content": jail})
-                try:
-                    response = gpt_response()
-                except:
-                    response = "Error in the ChatGPT response"
-                download_chat.append({"role": "assistant", "content": response})
-                st.session_state.messages.append({"role": "assistant", "content": response})
-                st.session_state.gpt_messages.append({"role": "assistant", "content": response})
-                saved_chat.append({"role": "assistant", "content": response})
-                
-                st.session_state.messages.append({"role": "user", "content": prompt})
-                st.session_state.gpt_messages.append({"role": "user", "content": prompt})
-                download_chat.append({"role": "user", "content": prompt})
-                saved_chat.append({"role": "user", "content": prompt})
-                try:
-                    response = gpt_response()
-                except:
-                    response = "Error in the ChatGPT response"
-                download_chat.append({"role": "assistant", "content": response})
-                st.session_state.messages.append({"role": "assistant", "content": response})
-                st.session_state.gpt_messages.append({"role": "assistant", "content": response})
-                saved_chat.append({"role": "assistant", "content": response})
-                
-                save_response_to_json(saved_chat, type_ ,index, 'gpt', selected_jail[i])
-                st.session_state.messages = []
-                st.session_state.gpt_messages = []
-                saved_chat = []
+                if selected_models == "claude-3-5-sonnet-20240620":
 
-
-                #run Claude
-                download_chat.append({"model": 'claude-3-5-sonnet-20240620', "options": st.session_state.gemini_options})
-                saved_chat.append({"model": 'claude-3-5-sonnet-20240620', "options": st.session_state.gemini_options})
-                st.session_state.messages.append({"role": "user", "content": jail})
-                st.session_state.claude_messages.append({"role": "user", "content": jail})
-                download_chat.append({"role": "user", "content": jail})
-                saved_chat.append({"role": "user", "content": jail})
-                try:
-                    response = claude_response()
-                except:
-                    response = "Error in the Claude response"
-                download_chat.append({"role": "assistant", "content": response})
-                saved_chat.append({"role": "assistant", "content": response})
-                st.session_state.messages.append({"role": "assistant", "content": response})
-                st.session_state.claude_messages.append({"role": "assistant", "content": response})
-                st.session_state.messages.append({"role": "user", "content": prompt})
-                st.session_state.claude_messages.append({"role": "user", "content": prompt})
-                download_chat.append({"role": "user", "content": prompt})
-                saved_chat.append({"role": "user", "content": prompt})
-                try:
-                    response = claude_response()
-                except:
-                    response = "Error in the Claude response"
-                download_chat.append({"role": "assistant", "content": response})
-                saved_chat.append({"role": "assistant", "content": response})
-                st.session_state.messages.append({"role": "assistant", "content": response})
-                st.session_state.claude_messages.append({"role": "assistant", "content": response})
-                
-                save_response_to_json(saved_chat, type_ ,index, 'claude', selected_jail[i])
-                st.session_state.messages = []  
-                st.session_state.claude_messages = []
-                saved_chat = []
+                    #run Claude
+                    download_chat.append({"model": 'claude-3-5-sonnet-20240620', "options": st.session_state.gemini_options})
+                    saved_chat.append({"model": 'claude-3-5-sonnet-20240620', "options": st.session_state.gemini_options})
+                    st.session_state.messages.append({"role": "user", "content": jail})
+                    st.session_state.claude_messages.append({"role": "user", "content": jail})
+                    download_chat.append({"role": "user", "content": jail})
+                    saved_chat.append({"role": "user", "content": jail})
+                    try:
+                        response = claude_response()
+                    except:
+                        response = "Error in the Claude response"
+                    download_chat.append({"role": "assistant", "content": response})
+                    saved_chat.append({"role": "assistant", "content": response})
+                    st.session_state.messages.append({"role": "assistant", "content": response})
+                    st.session_state.claude_messages.append({"role": "assistant", "content": response})
+                    st.session_state.messages.append({"role": "user", "content": prompt})
+                    st.session_state.claude_messages.append({"role": "user", "content": prompt})
+                    download_chat.append({"role": "user", "content": prompt})
+                    saved_chat.append({"role": "user", "content": prompt})
+                    try:
+                        response = claude_response()
+                    except:
+                        response = "Error in the Claude response"
+                    download_chat.append({"role": "assistant", "content": response})
+                    saved_chat.append({"role": "assistant", "content": response})
+                    st.session_state.messages.append({"role": "assistant", "content": response})
+                    st.session_state.claude_messages.append({"role": "assistant", "content": response})
+                    
+                    save_response_to_json(saved_chat, type_ ,index, 'claude', selected_jail[i])
+                    st.session_state.messages = []  
+                    st.session_state.claude_messages = []
+                    saved_chat = []
 
                 # run other models
                 for model in models: 
@@ -299,67 +301,70 @@ def run_experiments(df_type, selected_data, selected_jail=None):
             st.session_state.messages = []
             st.session_state.gpt_messages = []
             st.session_state.claude_messages = []
-            # append model name and options
-            download_chat.append({"model": 'gemini-1.5-flash', "options": st.session_state.gemini_options})
-            saved_chat.append({"model": 'gemini-1.5-flash', "options": st.session_state.gemini_options})
+            if selected_models == "gemini-1.5-flash":
+                # append model name and options
+                download_chat.append({"model": 'gemini-1.5-flash', "options": st.session_state.gemini_options})
+                saved_chat.append({"model": 'gemini-1.5-flash', "options": st.session_state.gemini_options})
 
-            # run request 
-            st.session_state.messages.append({"role": "user", "parts": prompt})
-            download_chat.append({"role": "user", "content": prompt})
-            saved_chat.append({"role": "user", "content": prompt})
-            try:
-                    response = gemini_response()
-            except:
-                    response = "Error in the Gemini response"
-            #append risposta alla request 
-            download_chat.append({"role": "assistant", "content": response})
-            saved_chat.append({"role": "assistant", "content": response})
-            
-            save_response_to_json(saved_chat, type_ ,index, 'gemini')
-            st.session_state.messages.append({"role": "assistant", "content": response})
-            st.session_state.messages = []
+                # run request 
+                st.session_state.messages.append({"role": "user", "parts": prompt})
+                download_chat.append({"role": "user", "content": prompt})
+                saved_chat.append({"role": "user", "content": prompt})
+                try:
+                        response = gemini_response()
+                except:
+                        response = "Error in the Gemini response"
+                #append risposta alla request 
+                download_chat.append({"role": "assistant", "content": response})
+                saved_chat.append({"role": "assistant", "content": response})
+                
+                save_response_to_json(saved_chat, type_ ,index, 'gemini')
+                st.session_state.messages.append({"role": "assistant", "content": response})
+                st.session_state.messages = []
 
             #run ChatGPT
-            download_chat.append({"model": 'gpt-3.5-turbo', "options": st.session_state.options})
-            saved_chat.append({"model": 'gpt-3.5-turbo', "options": st.session_state.options})
-            st.session_state.messages.append({"role": "user", "content": prompt})
-            st.session_state.gpt_messages.append({"role": "user", "content": prompt})
-            download_chat.append({"role": "user", "content": prompt})
-            saved_chat.append({"role": "user", "content": prompt})
-            try:
-                response = gpt_response()
-            except:
-                response = "Error in the ChatGPT response"
-            download_chat.append({"role": "assistant", "content": response})
-            saved_chat.append({"role": "assistant", "content": response})
-            st.session_state.messages.append({"role": "assistant", "content": response})
-            st.session_state.gpt_messages.append({"role": "assistant", "content": response})
-            
-            save_response_to_json(saved_chat, type_ ,index, 'gpt')
-            st.session_state.messages = []
-            st.session_state.gpt_messages = []
-            saved_chat = []
+            if selected_models == "gpt-3.5-turbo":
+                download_chat.append({"model": 'gpt-3.5-turbo', "options": st.session_state.options})
+                saved_chat.append({"model": 'gpt-3.5-turbo', "options": st.session_state.options})
+                st.session_state.messages.append({"role": "user", "content": prompt})
+                st.session_state.gpt_messages.append({"role": "user", "content": prompt})
+                download_chat.append({"role": "user", "content": prompt})
+                saved_chat.append({"role": "user", "content": prompt})
+                try:
+                    response = gpt_response()
+                except:
+                    response = "Error in the ChatGPT response"
+                download_chat.append({"role": "assistant", "content": response})
+                saved_chat.append({"role": "assistant", "content": response})
+                st.session_state.messages.append({"role": "assistant", "content": response})
+                st.session_state.gpt_messages.append({"role": "assistant", "content": response})
+                
+                save_response_to_json(saved_chat, type_ ,index, 'gpt')
+                st.session_state.messages = []
+                st.session_state.gpt_messages = []
+                saved_chat = []
 
             #run Claude
-            download_chat.append({"model": 'claude-3-5-sonnet-20240620', "options": st.session_state.gemini_options})
-            saved_chat.append({"model": 'claude-3-5-sonnet-20240620', "options": st.session_state.gemini_options})
-            st.session_state.messages.append({"role": "user", "content": prompt})
-            st.session_state.claude_messages.append({"role": "user", "content": prompt})
-            download_chat.append({"role": "user", "content": prompt})
-            saved_chat.append({"role": "user", "content": prompt})
-            try:
-                response = claude_response()
-            except:
-                response = "Error in the Claude response"
-            download_chat.append({"role": "assistant", "content": response})
-            saved_chat.append({"role": "assistant", "content": response})
-            st.session_state.messages.append({"role": "assistant", "content": response})
-            st.session_state.claude_messages.append({"role": "assistant", "content": response})
-            
-            save_response_to_json(saved_chat, type_ ,index, 'claude')
-            st.session_state.messages = []
-            st.session_state.claude_messages = []
-            saved_chat = []
+            if selected_models == "claude-3-5-sonnet-20240620":
+                download_chat.append({"model": 'claude-3-5-sonnet-20240620', "options": st.session_state.gemini_options})
+                saved_chat.append({"model": 'claude-3-5-sonnet-20240620', "options": st.session_state.gemini_options})
+                st.session_state.messages.append({"role": "user", "content": prompt})
+                st.session_state.claude_messages.append({"role": "user", "content": prompt})
+                download_chat.append({"role": "user", "content": prompt})
+                saved_chat.append({"role": "user", "content": prompt})
+                try:
+                    response = claude_response()
+                except:
+                    response = "Error in the Claude response"
+                download_chat.append({"role": "assistant", "content": response})
+                saved_chat.append({"role": "assistant", "content": response})
+                st.session_state.messages.append({"role": "assistant", "content": response})
+                st.session_state.claude_messages.append({"role": "assistant", "content": response})
+                
+                save_response_to_json(saved_chat, type_ ,index, 'claude')
+                st.session_state.messages = []
+                st.session_state.claude_messages = []
+                saved_chat = []
 
             # run other models
             for model in models:
@@ -408,6 +413,9 @@ models.append("gpt-3.5-turbo")
 models.append("claude-3-5-sonnet-20240620")
 df_models = pd.DataFrame(models, columns=["models"])
 df_models['selected'] = False
+df_models.loc[df_models["models"] =="gemini-1.5-flash", "selected"] = True
+df_models.loc[df_models["models"] =="gpt-3.5-turbo", "selected"] = True
+df_models.loc[df_models["models"] =="claude-3-5-sonnet-20240620", "selected"] = True
 
 models = st.data_editor(df_models, width=1000, height=300, hide_index=True)
 
