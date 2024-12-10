@@ -144,9 +144,9 @@ def run_experiments(df_type, selected_data, selected_jail=None):
     chat_history = []
     saved_chat = []
     download_chat = []
-    models = utils.get_models()
+    models = selected_models
     st.write("Models:")
-    st.write(["gemini-1.5-flash", "gpt-3.5-turbo", "claude-3-5-sonnet"] + models)
+    st.write(models)
     selected_data = selected_data['text'].tolist()
 
     # if df_type==True is jailbreak mode
@@ -397,7 +397,24 @@ st.markdown("In the case of jailbreak mode, the system will run the selected jai
 st.markdown("In the case of no jailbreak mode, the system will run only the request prompts. \n")
 st.markdown("Once the experiments are completed, they will be saved online and you can download with the button below! \n")
 
+st.divider() 
+
+st.markdown("### Model selection: \n")
+st.markdown("Select the models you want to use for the experiments. \n")
+
+models = utils.get_models()
+models.append("gemini-1.5-flash")
+models.append("gpt-3.5-turbo")
+models.append("claude-3-5-sonnet-20240620")
+df_models = pd.DataFrame(models, columns=["models"])
+df_models['selected'] = False
+
+models = st.data_editor(df_models, width=1000, height=300, hide_index=True)
+
+selected_models = models[models['selected']]['models'].tolist()
+
 st.divider()
+
 df_type = st.toggle("Jailbreak experiments", True)
 
 if df_type:
