@@ -190,7 +190,7 @@ def run_experiments(df_type, selected_data, selected_jail=None):
                     saved_chat.append({"role": "model", "parts": response})
                     st.session_state.messages.append({"role": "model", "parts": response})
                     
-                    save_response_to_json(saved_chat, type_ ,index, 'gemini', selected_jail[i])
+                    save_response_to_json(saved_chat, type_ ,index, 'gemini-1.5-flash', selected_jail[i])
                     st.session_state.messages = []
                     saved_chat = []
 
@@ -224,7 +224,7 @@ def run_experiments(df_type, selected_data, selected_jail=None):
                     st.session_state.gpt_messages.append({"role": "assistant", "content": response})
                     saved_chat.append({"role": "assistant", "content": response})
                     
-                    save_response_to_json(saved_chat, type_ ,index, 'gpt', selected_jail[i])
+                    save_response_to_json(saved_chat, type_ ,index, 'gpt-3.5-turbo', selected_jail[i])
                     st.session_state.messages = []
                     st.session_state.gpt_messages = []
                     saved_chat = []
@@ -259,7 +259,7 @@ def run_experiments(df_type, selected_data, selected_jail=None):
                     st.session_state.messages.append({"role": "assistant", "content": response})
                     st.session_state.claude_messages.append({"role": "assistant", "content": response})
                     
-                    save_response_to_json(saved_chat, type_ ,index, 'claude', selected_jail[i])
+                    save_response_to_json(saved_chat, type_ ,index, 'claude-3-5-sonnet-20240620', selected_jail[i])
                     st.session_state.messages = []  
                     st.session_state.claude_messages = []
                     saved_chat = []
@@ -318,7 +318,7 @@ def run_experiments(df_type, selected_data, selected_jail=None):
                 download_chat.append({"role": "assistant", "content": response})
                 saved_chat.append({"role": "assistant", "content": response})
                 
-                save_response_to_json(saved_chat, type_ ,index, 'gemini')
+                save_response_to_json(saved_chat, type_ ,index, 'gemini-1.5-flash')
                 st.session_state.messages.append({"role": "assistant", "content": response})
                 st.session_state.messages = []
 
@@ -339,7 +339,7 @@ def run_experiments(df_type, selected_data, selected_jail=None):
                 st.session_state.messages.append({"role": "assistant", "content": response})
                 st.session_state.gpt_messages.append({"role": "assistant", "content": response})
                 
-                save_response_to_json(saved_chat, type_ ,index, 'gpt')
+                save_response_to_json(saved_chat, type_ ,index, 'gpt-3.5-turbo')
                 st.session_state.messages = []
                 st.session_state.gpt_messages = []
                 saved_chat = []
@@ -361,7 +361,7 @@ def run_experiments(df_type, selected_data, selected_jail=None):
                 st.session_state.messages.append({"role": "assistant", "content": response})
                 st.session_state.claude_messages.append({"role": "assistant", "content": response})
                 
-                save_response_to_json(saved_chat, type_ ,index, 'claude')
+                save_response_to_json(saved_chat, type_ ,index, 'claude-3-5-sonnet-20240620')
                 st.session_state.messages = []
                 st.session_state.claude_messages = []
                 saved_chat = []
