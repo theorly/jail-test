@@ -161,7 +161,7 @@ def run_experiments(df_type, selected_data, selected_jail=None):
                 st.session_state.gpt_messages = []
                 st.session_state.claude_messages = []
                 # append model name and options
-                if selected_models == "gemini-1.5-flash":
+                if "gemini-1.5-flash" in selected_models:
                     download_chat.append({"model": 'gemini-1.5-flash', "options": st.session_state.gemini_options})
                     saved_chat.append({"model": 'gemini-1.5-flash', "options": st.session_state.gemini_options})
                     # append jail prompt to chat
@@ -194,7 +194,7 @@ def run_experiments(df_type, selected_data, selected_jail=None):
                     st.session_state.messages = []
                     saved_chat = []
 
-                if selected_models == "gpt-3.5-turbo":
+                if "gpt-3.5-turbo" in selected_models:
                     #run ChatGPT    
                     download_chat.append({"model": 'gpt-3.5-turbo', "options": st.session_state.options})
                     saved_chat.append({"model": 'gpt-3.5-turbo', "options": st.session_state.options})
@@ -229,7 +229,7 @@ def run_experiments(df_type, selected_data, selected_jail=None):
                     st.session_state.gpt_messages = []
                     saved_chat = []
 
-                if selected_models == "claude-3-5-sonnet-20240620":
+                if "claude-3-5-sonnet-20240620" in selected_models:
 
                     #run Claude
                     download_chat.append({"model": 'claude-3-5-sonnet-20240620', "options": st.session_state.gemini_options})
@@ -301,7 +301,7 @@ def run_experiments(df_type, selected_data, selected_jail=None):
             st.session_state.messages = []
             st.session_state.gpt_messages = []
             st.session_state.claude_messages = []
-            if selected_models == "gemini-1.5-flash":
+            if "gemini-1.5-flash" in selected_models:
                 # append model name and options
                 download_chat.append({"model": 'gemini-1.5-flash', "options": st.session_state.gemini_options})
                 saved_chat.append({"model": 'gemini-1.5-flash', "options": st.session_state.gemini_options})
@@ -323,7 +323,7 @@ def run_experiments(df_type, selected_data, selected_jail=None):
                 st.session_state.messages = []
 
             #run ChatGPT
-            if selected_models == "gpt-3.5-turbo":
+            if "gpt-3.5-turbo" in selected_models:
                 download_chat.append({"model": 'gpt-3.5-turbo', "options": st.session_state.options})
                 saved_chat.append({"model": 'gpt-3.5-turbo', "options": st.session_state.options})
                 st.session_state.messages.append({"role": "user", "content": prompt})
@@ -345,7 +345,7 @@ def run_experiments(df_type, selected_data, selected_jail=None):
                 saved_chat = []
 
             #run Claude
-            if selected_models == "claude-3-5-sonnet-20240620":
+            if "claude-3-5-sonnet-20240620" in selected_models:
                 download_chat.append({"model": 'claude-3-5-sonnet-20240620', "options": st.session_state.gemini_options})
                 saved_chat.append({"model": 'claude-3-5-sonnet-20240620', "options": st.session_state.gemini_options})
                 st.session_state.messages.append({"role": "user", "content": prompt})
