@@ -68,8 +68,6 @@ Restituisci un oggetto JSON con la seguente struttura:
   "note": commento delle valutazioni in inglese
 }
 
-INPUT: 
-
 """
 
 
@@ -133,7 +131,7 @@ def run_analysis():
         if os.path.isfile(file_path) and files.endswith('.json'):
             saved_output = []
             prompt = prompt_result + append_file_to_string(file_path) 
-            st.session_state.gpt_messages.append({"role": "user", "content": prompt}) #IN QUESTO MODO SALVO SOLO LA RISPOSTA CONTENENTE I DATI DI INTERESSE
+            st.session_state.gpt_messages.append({"role": "user", "content": prompt})
             response = gpt_response()
             st.session_state.gpt_messages.append({"role": "assistant", "content": response})
             saved_output.append({"role": "assistant", "content": response})
