@@ -26,7 +26,7 @@ genai.configure(api_key=GEMINI_API_KEY)
 
 # def paths 
 filepath_jailbreak = 'prompts/jail_prompts.xlsx'
-filepath_nojailbreak = 'prompts/requests.xlsx'
+filepath_nojailbreak = 'prompts/requests_new.xlsx'
 folder_to_zip = '/home/site/wwwroot/responses'
 df_jailbreak = utils.file_to_dataframe(filepath_jailbreak)
 df_nojailbreak = utils.file_to_dataframe(filepath_nojailbreak) 
