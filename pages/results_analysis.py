@@ -131,11 +131,14 @@ def run_analysis():
     for files in os.listdir(folder):
         file_path = os.path.join(folder, files)
         if os.path.isfile(file_path) and files.endswith('.json'):
+            saved_output = []
             prompt = prompt_result + append_file_to_string(file_path) 
-            #st.session_state.gpt_messages.append({"role": "user", "content": prompt}) #IN QUESTO MODO SALVO SOLO LA RISPOSTA CONTENENTE I DATI DI INTERESSE
+            st.session_state.gpt_messages.append({"role": "user", "content": prompt}) #IN QUESTO MODO SALVO SOLO LA RISPOSTA CONTENENTE I DATI DI INTERESSE
             response = gpt_response()
-            st.session_state.gpt_messages.append({"role": "assistant", "content": response}) 
-            save_response_to_json(st.session_state.gpt_messages , files)
+            st.session_state.gpt_messages.append({"role": "assistant", "content": response})
+            saved_output.append({"role": "assistant", "content": response})
+            save_response_to_json(saved_output , files)
+            saved_output = []
             st.session_state.gpt_messages = []
 
 
