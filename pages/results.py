@@ -25,7 +25,7 @@ def load_json_data(folder_path):
     
     # Scorri tutti i file .json nella cartella
     for filename in os.listdir(folder_path):
-        if filename.endswith(".json"):
+        #if filename.endswith(".json"):
             file_path = os.path.join(folder_path, filename)
             with open(file_path, 'r') as file:
                 # Leggi il contenuto del file e carica il JSON
