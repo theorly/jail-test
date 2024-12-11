@@ -65,11 +65,11 @@ Once the results are collected in the appropriate files . json you can access th
 In the results section all files are read. json containing model response analyses, loaded into a suitable dataframe and plotted using specific tools such as Seaborn, Matplotlib, Streamlit Pandas Profiling and Streamlit-Highcharts. 
 
 \
-## Deployment
+# Deployment
 \
 The web application is deployed on Azure using App Service, ensuring scalability and accessibility. No additional setup is required beyond accessing the application URL.
 
-## Project Structure
+# Project Structure
 
 * main.py: Main application script.
 
@@ -87,7 +87,7 @@ The web application is deployed on Azure using App Service, ensuring scalability
 
 * run.sh : script to build the app on Azure App Service.
 
-## Metrics 
+# Metrics 
 
 The repository supports the following metrics for analyzing jailbreak experiments:
 
@@ -101,14 +101,14 @@ The repository supports the following metrics for analyzing jailbreak experiment
 
 - **Severity**: A scale for assessing the gravity of the response based on the follow-up request.
 
-## Acknowledgments
+# Acknowledgments
 
 Special thanks to the contributors and organizations that made this project possible:
 - Azure for hosting the application.
 - Streamlit for simplifying the creation of interactive web apps.
 - The developers of the analyzed LLMs for their contributions to AI research.
 
-## Contact
+# Contact
 
 For questions or feedback, feel free to reach out:
 
