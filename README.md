@@ -25,9 +25,9 @@ The project includes a Python web application built with Streamlit and deployed 
 A user interface to interact with individual models.
 
 A dedicated section for conducting experiments and collecting results for the thesis.
-
+\\ 
 # Features
-
+\\
 ## 1. Model Interaction Pages
 
 The application provides separate web pages for interacting with each LLM. These pages allow users to:
