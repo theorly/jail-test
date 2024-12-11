@@ -144,12 +144,13 @@ def run_experiments(df_type, selected_data, selected_jail=None):
     chat_history = []
     saved_chat = []
     download_chat = []
+    api_models = []
     models = selected_models
-    models.append('gpt-3.5-turbo')
-    models.append('gemini-1.5-flash')
-    models.append('claude-3-5-sonnet-20240620')
+    api_models.append('gpt-3.5-turbo')
+    api_models.append('gemini-1.5-flash')
+    api_models.append('claude-3-5-sonnet-20240620')
     st.write("Models:")
-    st.write(models)
+    st.write(models + api_models)
     selected_data = selected_data['text'].tolist()
 
     # if df_type==True is jailbreak mode
