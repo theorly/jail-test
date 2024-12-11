@@ -54,13 +54,16 @@ A specialized section of the application is designed for experimentation, enabli
 
 - **Download Results**: Users can download the folder containing all collected results via a dedicated download button.
 
+
 ## 3. Results Analysis
 
 Once the results are collected in the appropriate files . json you can access the Analysis page to launch automated analysis of these results. In particular, these data are analyzed by GPT-3.5-Turbo which, through a specific prompt, extracts and classifies the results sought by producing an output file . json containing all the relevant metrics for the study. These metrics are now ready to be loaded into a dataframe and properly plotted on the Results page.
 
+
 ## 4. Results
 
 In the results section all files are read. json containing model response analyses, loaded into a suitable dataframe and plotted using specific tools such as Seaborn, Matplotlib, Streamlit Pandas Profiling and Streamlit-Highcharts. 
+
 
 ## Deployment
 
