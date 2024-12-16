@@ -32,7 +32,8 @@ pages = {
         st.Page("pages/results_analysis.py", title="Analysis", icon=":material/output:"),
     ],
     "Results": [
-         st.Page("pages/results.py", title="Results", icon=":material/analytics:"),
+        #st.Page("pages/results.py", title="Results", icon=":material/analytics:"),
+        st.Page("pages/display_res.py", title="Results", icon=":material/analytics:"),
     ],
     "Info": [
         st.Page("pages/info.py", title="Info", icon=":material/info:")
