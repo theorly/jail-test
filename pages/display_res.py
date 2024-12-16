@@ -68,7 +68,6 @@ def load_json_data(folder_path):
 
 df = load_json_data(results_folder)
 st.markdown(f"**Numero di record: {len(df)}**")
-df["jailbreak_success"] = True  # Converti in booleano
 st.dataframe(df)
 
 agg_data = (
