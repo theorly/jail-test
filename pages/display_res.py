@@ -71,10 +71,10 @@ st.markdown(f"**Numero di record: {len(df)}**")
 st.dataframe(df)
 
 agg_data = (
-    df.groupby("model_name")["jail_success"]
+    df.groupby("model_name")["jailbreak_success"]
     .mean()  # Calcola la percentuale (True come 1, False come 0)
     .reset_index()
-    .rename(columns={"jail_success": "jail_success_rate"})
+    .rename(columns={"jailbreak_success": "jail_success_rate"})
 )
 agg_data["jail_success_rate"] *= 100  # Converti in percentuale
 
