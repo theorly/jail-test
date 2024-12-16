@@ -70,22 +70,14 @@ df = load_json_data(results_folder)
 st.markdown(f"**Numero di record: {len(df)}**")
 st.dataframe(df)
 
-grouped = (
-    df.groupby(["model_name", "jail_prompt_id"])
-    .agg(success_rate=("jailbreak_success", lambda x: x.mean() * 100))
+agg_data = (
+    df.groupby("model_name")["jail_success"]
+    .mean()  # Calcola la percentuale (True come 1, False come 0)
     .reset_index()
+    .rename(columns={"jail_success": "jail_success_rate"})
 )
+agg_data["jail_success_rate"] *= 100  # Converti in percentuale
 
-highcharts_data = [
-    {
-        "name": model,
-        "data": [
-            {"name": f"Prompt {prompt_id}", "y": success_rate}
-            for prompt_id, success_rate in group["success_rate"].items()
-        ],
-    }
-    for model, group in grouped.groupby("model_name")
-]
 
 
 with elements("activity_charts"): 
@@ -166,7 +158,12 @@ with elements("activity_charts"):
     'plotOptions': { 'series': { 'dataLabels': { 'enabled': True,
                                                 'format': '{point.name}: '
                                                             '{point.y:.1f}%'}}},
-    'series': highcharts_data,
+    'series':[
+        {
+            "name": "Jail Success Rate",
+            "data": agg_data["jail_success_rate"].tolist(),
+        }
+    ],
     
     'title': { 'text': 'Jailbreak Rate Success '
                         },
