@@ -21,7 +21,7 @@ st.markdown("""Questi grafici sono progettati per fornire un'analisi completa e 
 Questa combinazione di visualizzazioni permette di ottenere insight approfonditi sulle prestazioni dei modelli e guidare le decisioni per ulteriori miglioramenti. """)
 
 results_folder = '/home/site/wwwroot/responses/analysis'
-
+#results_folder = 'results/analysis'
 
 
 def load_json_data(folder_path):
@@ -68,16 +68,7 @@ def load_json_data(folder_path):
 
 df = load_json_data(results_folder)
 st.markdown(f"**Numero di record: {len(df)}**")
-st.dataframe(df)
-
-agg_data = (
-    df.groupby("model_name")["jailbreak_success"]
-    .mean()  # Calcola la percentuale (True come 1, False come 0)
-    .reset_index()
-    .rename(columns={"jailbreak_success": "jail_success_rate"})
-)
-agg_data["jail_success_rate"] *= 100  # Converti in percentuale
-
+st.dataframe(df, width=1000, height=500)
 
 
 with elements("activity_charts"): 
@@ -152,31 +143,181 @@ with elements("activity_charts"):
     **Cosa Mostra**:  
     -La robustezza dei modelli nel prevenire il jailbreaking.  
     -Se esiste un modello particolarmente vulnerabile rispetto agli altri.""")
-    jail_chart={ 'accessibility': { 'announceNewData': { 'enabled': True},
-                        'point': { 'valueSuffix': '%'}},
-    'chart': {'type': 'pie'},
-    'plotOptions': { 'series': { 'dataLabels': { 'enabled': True,
-                                                'format': '{point.name}: '
-                                                            '{point.y:.1f}%'}}},
-    'series':[
-        {
-            "name": "Jail Success Rate",
-            "data": agg_data["jail_success_rate"].tolist(),
-        }
-    ],
     
-    'title': { 'text': 'Jailbreak Rate Success '
-                        },
-    'tooltip': { 'headerFormat': '<span '
-                                'style="font-size:11px">{series.name}</span><br>',
-                'pointFormat': '<span '
-                                'style="color:{point.color}">{point.name}</span>: '
-                                '<b>{point.y:.2f}%</b> '
-                                'of '
-                                'total<br/>'}}
+    # Conta il numero di successi e insuccessi del jailbreak
+    success_counts = df['jailbreak_success'].value_counts().reset_index()
+    success_counts.columns = ['jailbreak_success', 'count']
 
+    # Prepara i dati per il grafico principale
+    main_chart_data = [
+        {
+            'name': 'Success',
+            'y': int(success_counts[success_counts['jailbreak_success'] == True]['count']),
+            'drilldown': 'success_details'
+        },
+        {
+            'name': 'Failure',
+            'y': int(success_counts[success_counts['jailbreak_success'] == False]['count']),
+            'drilldown': 'failure_details'
+        }
+    ]
 
-    hg.streamlit_highcharts(jail_chart,400)
+    # Prepara i dati di drilldown
+    # Per 'Success', suddividiamo per 'model_name'
+    success_drilldown_data = df[df['jailbreak_success'] == True]['model_name'].value_counts().reset_index()
+    success_drilldown_data.columns = ['model_name', 'count']
+    success_drilldown_series = {
+        'name': 'Success Details',
+        'id': 'success_details',
+        'data': success_drilldown_data.apply(lambda row: [row['model_name'], row['count']], axis=1).tolist()
+    }
+
+    # Per 'Failure', suddividiamo per 'model_name'
+    failure_drilldown_data = df[df['jailbreak_success'] == False]['model_name'].value_counts().reset_index()
+    failure_drilldown_data.columns = ['model_name', 'count']
+    failure_drilldown_series = {
+        'name': 'Failure Details',
+        'id': 'failure_details',
+        'data': failure_drilldown_data.apply(lambda row: [row['model_name'], row['count']], axis=1).tolist()
+    }
+
+    # Definisci le opzioni del grafico Highcharts
+    chart_options = {
+        'chart': {
+            'type': 'pie'
+        },
+        'title': {
+            'text': 'Distribuzione Jailbreak Success'
+        },
+        'subtitle': {
+            'text': 'Clicca sulle fette per vedere i dettagli per Model Name.'
+        },
+        'accessibility': {
+            'announceNewData': {
+                'enabled': True
+            },
+            'point': {
+                'valueSuffix': '%'
+            }
+        },
+        'plotOptions': {
+            'pie': {
+                'allowPointSelect': True,
+                'cursor': 'pointer',
+                'dataLabels': {
+                    'enabled': True,
+                    'format': '<b>{point.name}</b>: {point.percentage:.1f} %'
+                }
+            }
+        },
+        'tooltip': {
+            'headerFormat': '<span style="font-size:11px">{series.name}</span><br>',
+            'pointFormat': '<span style="color:{point.color}">{point.name}</span>: <b>{point.y}</b> di totale<br/>'
+        },
+        'series': [{
+            'name': 'Jailbreak Success',
+            'colorByPoint': True,
+            'data': main_chart_data
+        }],
+        'drilldown': {
+            'series': [
+                success_drilldown_series,
+                failure_drilldown_series
+            ]
+        }
+    }
+
+    # Visualizza il grafico
+    hg.streamlit_highcharts(chart_options)
+
+    # Selezione del drilldown
+    selected_drilldown = st.radio(
+        "Seleziona una categoria per vedere i dettagli:",
+        ('Nessuna', 'Success', 'Failure')
+    )
+
+    if selected_drilldown == 'Success':
+        st.subheader('Dettagli per Success')
+        success_details = df[df['jailbreak_success'] == True][['model_name', 'jail_prompt_id', 'req_id']]
+        st.table(success_details)
+    elif selected_drilldown == 'Failure':
+        st.subheader('Dettagli per Failure')
+        failure_details = df[df['jailbreak_success'] == False][['model_name', 'jail_prompt_id', 'req_id']]
+        st.table(failure_details)
+
+with elements("chart_jailbreak"):
+  # Filtriamo il dataframe per includere solo i jailbreak_success = True
+    filtered_data = df[df['jailbreak_success'] == True]
+
+    # Eseguiamo l'aggregazione per ottenere il count di jailbreak_success per ciascun model_name e jail_prompt_id
+    aggregated_data = filtered_data.groupby(['model_name', 'jail_prompt_id']).size().reset_index(name='count')
+
+    # Creiamo una lista per la configurazione del grafico
+    series_data = []
+
+    for model in aggregated_data['model_name'].unique():
+        model_data = aggregated_data[aggregated_data['model_name'] == model]
+        
+        bubbles = []
+        for _, row in model_data.iterrows():
+            # Ogni bubble ha un nome (jail_prompt_id), una dimensione (count)
+            bubbles.append({
+                'name': row['jail_prompt_id'],
+                'value': row['count']
+            })
+        
+        series_data.append({
+            'name': model,
+            'data': bubbles
+        })
+
+    # Configurazione del grafico
+    chartDef = {
+        'chart': {
+            'height': '100%',
+            'type': 'packedbubble'
+        },
+        'plotOptions': {
+            'packedbubble': {
+                'dataLabels': {
+                    'enabled': True,
+                    'filter': {
+                        'operator': '>',
+                        'property': 'y',
+                        'value': 1
+                    },
+                    'format': '{point.name}',
+                    'style': {
+                        'color': 'black',
+                        'fontWeight': 'normal',
+                        'textOutline': 'none'
+                    }
+                },
+                'layoutAlgorithm': {
+                    'dragBetweenSeries': True,
+                    'gravitationalConstant': 0.05,
+                    'parentNodeLimit': True,
+                    'seriesInteraction': False,
+                    'splitSeries': True
+                },
+                'maxSize': '100%',
+                'minSize': '20%',
+                'zMax': 1000,
+                'zMin': 0
+            }
+        },
+        'series': series_data,
+        'title': {
+            'text': 'Jailbreak Success Distribution by Model and Prompt'
+        },
+        'tooltip': {
+            'pointFormat': '<b>{point.name}:</b> {point.value} successes',
+            'useHTML': True
+        }
+    }
+
+    # Visualizzazione in Streamlit (se il componente hg è installato)
+    hg.streamlit_highcharts(chartDef, 640)
 
 
 with elements("chart_style"):
@@ -193,1330 +334,113 @@ with elements("chart_style"):
     -La tendenza del modello a rispettare o meno lo stile richiesto.
     """)
 
-    chart_style={ 'labels': { 'items': [ { 'html': 'Total '
-                                   'liter',
-                           'style': { 'color': 'black',
-                                      'left': '50px',
-                                      'top': '18px'}}]},
-  'series': [ { 'data': [ 59,
-                          83,
-                          65,
-                          228,
-                          184],
-                'name': '2020',
-                'type': 'column'},
-              { 'data': [ 24,
-                          79,
-                          72,
-                          240,
-                          167],
-                'name': '2021',
-                'type': 'column'},
-              { 'data': [ 58,
-                          88,
-                          75,
-                          250,
-                          176],
-                'name': '2022',
-                'type': 'column'},
-              { 'data': [ 47,
-                          83.33,
-                          70.66,
-                          239.33,
-                          175.66],
-                'marker': { 'fillColor': 'black',
-                            'lineWidth': 2},
-                'name': 'Average',
-                'type': 'spline'},
-              { 'center': [80, 70],
-                'data': [ { 'color': '#7cb4ec',
-                            'name': '2020',
-                            'y': 619},
-                          { 'color': '#434348',
-                            'name': '2021',
-                            'y': 586},
-                          { 'color': '#90ed7d',
-                            'name': '2022',
-                            'y': 647}],
-                'dataLabels': { 'enabled': False},
-                'name': 'Liter',
-                'showInLegend': False,
-                'size': 100,
-                'type': 'pie'}],
-  'title': { 'align': 'left',
-             'text': 'Sales of '
-                     'petroleum '
-                     'products March, '
-                     'Norway'},
-  'xAxis': { 'categories': [ 'Jet fuel',
-                             'Duty-free '
-                             'diesel',
-                             'Petrol',
-                             'Diesel',
-                             'Gas '
-                             'oil']},
-  'yAxis': { 'title': { 'text': 'Million '
-                                'liter'}}}
+     # Creazione di intervalli per la distribuzione
+    df["consistency_range"] = pd.cut(
+        df["style_consistency"], bins=[0, 2, 4, 5], labels=["1-2", "3-4", "5"]
+    )
 
+    # Dati per il grafico a barre (media di style_consistency per modello)
+    bar_data = df.groupby("model_name")["style_consistency"].mean().reset_index()
+    categories = bar_data["model_name"].tolist()
+    bar_values = bar_data["style_consistency"].tolist()
 
-    hg.streamlit_highcharts(chart_style,440)
+    # Dati per il grafico a torta (distribuzione degli intervalli)
+    pie_data = (
+        df["consistency_range"]
+        .value_counts()
+        .sort_index()
+        .reset_index()
+        .rename(columns={"index": "range", "consistency_range": "count"})
+    )
+    pie_values = [{"name": row["range"], "y": row["count"]} for _, row in pie_data.iterrows()]
 
-    # the second one 
-    chartDef={ 'annotations': [ { 'labelOptions': { 'backgroundColor': 'rgba(255,255,255,0.5)',
-                                       'borderColor': 'silver'},
-                     'labels': [ { 'point': { 'x': 5.5,
-                                              'xAxis': 0,
-                                              'y': 30,
-                                              'yAxis': 0},
-                                   'text': 'Cancelled<br>during<br>World '
-                                           'War '
-                                           'II'},
-                                 { 'point': { 'x': 18,
-                                              'xAxis': 0,
-                                              'y': 90,
-                                              'yAxis': 0},
-                                   'text': 'Soviet '
-                                           'Union '
-                                           'fell,<br>Germany '
-                                           'united'}]}],
-  'chart': { 'marginBottom': 30,
-             'type': 'streamgraph',
-             'zoomType': 'x'},
-  'exporting': { 'sourceHeight': 600,
-                 'sourceWidth': 800},
-  'legend': {'enabled': False},
-  'plotOptions': { 'series': { 'accessibility': { 'exposeAsGroupOnly': True},
-                               'label': { 'maxFontSize': 15,
-                                          'minFontSize': 5,
-                                          'style': { 'color': 'rgba(255,255,255,0.75)'}}}},
-  'series': [ { 'data': [ 0,
-                          11,
-                          4,
-                          3,
-                          6,
-                          0,
-                          0,
-                          6,
-                          9,
-                          7,
-                          8,
-                          10,
-                          5,
-                          5,
-                          7,
-                          9,
-                          13,
-                          7,
-                          7,
-                          6,
-                          12,
-                          7,
-                          9,
-                          5,
-                          5],
-                'name': 'Finland'},
-              { 'data': [ 0,
-                          3,
-                          4,
-                          2,
-                          4,
-                          0,
-                          0,
-                          8,
-                          8,
-                          11,
-                          6,
-                          12,
-                          11,
-                          5,
-                          6,
-                          7,
-                          1,
-                          10,
-                          21,
-                          9,
-                          17,
-                          17,
-                          23,
-                          16,
-                          17],
-                'name': 'Austria'},
-              { 'data': [ 0,
-                          2,
-                          5,
-                          3,
-                          7,
-                          0,
-                          0,
-                          10,
-                          4,
-                          10,
-                          7,
-                          7,
-                          8,
-                          4,
-                          2,
-                          4,
-                          8,
-                          6,
-                          4,
-                          3,
-                          3,
-                          7,
-                          14,
-                          11,
-                          15],
-                'name': 'Sweden'},
-              { 'data': [ 0,
-                          17,
-                          15,
-                          10,
-                          15,
-                          0,
-                          0,
-                          10,
-                          16,
-                          4,
-                          6,
-                          15,
-                          14,
-                          12,
-                          7,
-                          10,
-                          9,
-                          5,
-                          20,
-                          26,
-                          25,
-                          25,
-                          19,
-                          23,
-                          26],
-                'name': 'Norway'},
-              { 'data': [ 0,
-                          4,
-                          6,
-                          12,
-                          4,
-                          0,
-                          0,
-                          9,
-                          11,
-                          7,
-                          10,
-                          7,
-                          7,
-                          8,
-                          10,
-                          12,
-                          8,
-                          6,
-                          11,
-                          13,
-                          13,
-                          34,
-                          25,
-                          37,
-                          28],
-                'name': 'U.S.'},
-              { 'data': [ 0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          5,
-                          14,
-                          19,
-                          23,
-                          24,
-                          25,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0],
-                'name': 'East Germany'},
-              { 'data': [ 0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          7,
-                          5,
-                          10,
-                          5,
-                          4,
-                          8,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0],
-                'name': 'West Germany'},
-              { 'data': [ 0,
-                          0,
-                          1,
-                          2,
-                          6,
-                          0,
-                          0,
-                          0,
-                          7,
-                          2,
-                          8,
-                          9,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          26,
-                          24,
-                          29,
-                          36,
-                          29,
-                          30,
-                          19],
-                'name': 'Germany'},
-              { 'data': [ 0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          3,
-                          0,
-                          2,
-                          2,
-                          9,
-                          9,
-                          6,
-                          4,
-                          0,
-                          7,
-                          4,
-                          4,
-                          11,
-                          8,
-                          9,
-                          8,
-                          24],
-                'name': 'Netherlands'},
-              { 'data': [ 0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          1,
-                          2,
-                          3,
-                          1,
-                          4,
-                          4,
-                          5,
-                          4,
-                          2,
-                          2,
-                          5,
-                          14,
-                          20,
-                          10,
-                          13,
-                          11,
-                          5,
-                          8],
-                'name': 'Italy'},
-              { 'data': [ 0,
-                          1,
-                          1,
-                          7,
-                          1,
-                          0,
-                          0,
-                          3,
-                          2,
-                          3,
-                          4,
-                          3,
-                          3,
-                          1,
-                          3,
-                          2,
-                          4,
-                          5,
-                          7,
-                          13,
-                          15,
-                          17,
-                          24,
-                          26,
-                          25],
-                'name': 'Canada'},
-              { 'data': [ 0,
-                          3,
-                          1,
-                          1,
-                          3,
-                          0,
-                          0,
-                          10,
-                          2,
-                          6,
-                          2,
-                          0,
-                          6,
-                          10,
-                          5,
-                          5,
-                          5,
-                          15,
-                          3,
-                          9,
-                          7,
-                          11,
-                          14,
-                          9,
-                          11],
-                'name': 'Switzerland'},
-              { 'data': [ 0,
-                          4,
-                          1,
-                          0,
-                          3,
-                          0,
-                          0,
-                          2,
-                          1,
-                          0,
-                          0,
-                          1,
-                          0,
-                          0,
-                          1,
-                          1,
-                          1,
-                          0,
-                          0,
-                          2,
-                          1,
-                          2,
-                          1,
-                          1,
-                          4],
-                'name': 'Great '
-                        'Britain'},
-              { 'data': [ 0,
-                          3,
-                          1,
-                          1,
-                          1,
-                          0,
-                          0,
-                          5,
-                          1,
-                          0,
-                          3,
-                          7,
-                          9,
-                          3,
-                          1,
-                          1,
-                          3,
-                          2,
-                          9,
-                          5,
-                          8,
-                          11,
-                          9,
-                          11,
-                          15],
-                'name': 'France'},
-              { 'data': [ 0,
-                          0,
-                          0,
-                          1,
-                          1,
-                          0,
-                          0,
-                          1,
-                          1,
-                          1,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          1,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0],
-                'name': 'Hungary'},
-              { 'data': [ 0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          23,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0],
-                'name': 'Unified Team'},
-              { 'data': [ 0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          16,
-                          21,
-                          25,
-                          13,
-                          16,
-                          27,
-                          22,
-                          25,
-                          29,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0],
-                'name': 'Soviet Union'},
-              { 'data': [ 0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          23,
-                          18,
-                          13,
-                          22,
-                          15,
-                          33],
-                'name': 'Russia'},
-              { 'data': [ 0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          1,
-                          0,
-                          0,
-                          0,
-                          3,
-                          0,
-                          1,
-                          1,
-                          1,
-                          7,
-                          5,
-                          10,
-                          2,
-                          1,
-                          5,
-                          8],
-                'name': 'Japan'},
-              { 'data': [ 0,
-                          0,
-                          1,
-                          0,
-                          0,
-                          0,
-                          0,
-                          1,
-                          0,
-                          0,
-                          1,
-                          1,
-                          4,
-                          3,
-                          1,
-                          1,
-                          6,
-                          3,
-                          3,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0],
-                'name': 'Czechoslovakia'},
-              { 'data': [ 0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          1,
-                          2,
-                          0,
-                          0,
-                          1,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          2,
-                          2,
-                          6,
-                          6],
-                'name': 'Poland'},
-              { 'data': [ 0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          1,
-                          0,
-                          0,
-                          0,
-                          0,
-                          1,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0],
-                'name': 'Spain'},
-              { 'data': [ 0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          3,
-                          3,
-                          8,
-                          8,
-                          11,
-                          11,
-                          9],
-                'name': 'China'},
-              { 'data': [ 0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          4,
-                          6,
-                          6,
-                          4,
-                          11,
-                          14,
-                          8],
-                'name': 'South Korea'},
-              { 'data': [ 0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          3,
-                          3,
-                          4,
-                          6,
-                          8],
-                'name': 'Czech '
-                        'Republic'},
-              { 'data': [ 0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          2,
-                          2,
-                          1,
-                          1,
-                          3,
-                          6],
-                'name': 'Belarus'},
-              { 'data': [ 0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          3,
-                          2,
-                          0,
-                          0,
-                          1,
-                          1],
-                'name': 'Kazakhstan'},
-              { 'data': [ 0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          1,
-                          0,
-                          0,
-                          0,
-                          0,
-                          1,
-                          3,
-                          1,
-                          0,
-                          0],
-                'name': 'Bulgaria'},
-              { 'data': [ 0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          1,
-                          0,
-                          0,
-                          0,
-                          0],
-                'name': 'Denmark'},
-              { 'data': [ 0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          2,
-                          1,
-                          0,
-                          2,
-                          0,
-                          2],
-                'name': 'Ukraine'},
-              { 'data': [ 0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          1,
-                          1,
-                          2,
-                          2,
-                          3,
-                          3],
-                'name': 'Australia'},
-              { 'data': [ 0,
-                          1,
-                          1,
-                          0,
-                          0,
-                          0,
-                          0,
-                          2,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          1,
-                          0,
-                          0,
-                          0,
-                          0],
-                'name': 'Belgium'},
-              { 'data': [ 0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          1,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0],
-                'name': 'Romania'},
-              { 'data': [ 0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          2,
-                          4,
-                          2,
-                          1,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0],
-                'name': 'Liechtenstein'},
-              { 'data': [ 0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          1,
-                          3,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0],
-                'name': 'Yugoslavia'},
-              { 'data': [ 0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          2,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0],
-                'name': 'Luxembourg'},
-              { 'data': [ 0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          1,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0],
-                'name': 'New Zealand'},
-              { 'data': [ 0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          1,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          1,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0],
-                'name': 'North Korea'},
-              { 'data': [ 0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          1,
-                          3,
-                          1],
-                'name': 'Slovakia'},
-              { 'data': [ 0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          4,
-                          3,
-                          3,
-                          1],
-                'name': 'Croatia'},
-              { 'data': [ 0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          3,
-                          0,
-                          1,
-                          0,
-                          3,
-                          8],
-                'name': 'Slovenia'},
-              { 'data': [ 0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          1,
-                          2,
-                          4],
-                'name': 'Latvia'},
-              { 'data': [ 0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          3,
-                          3,
-                          1,
-                          0],
-                'name': 'Estonia'},
-              { 'data': [ 0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0,
-                          1,
-                          0,
-                          0,
-                          0,
-                          0,
-                          0],
-                'name': 'Uzbekistan'}],
-  'subtitle': { 'align': 'left',
-                'floating': True,
-                'text': 'Source: <a '
-                        'href="https://www.sports-reference.com/olympics/winter/1924/">sports-reference.com</a>',
-                'y': 30},
-  'title': { 'align': 'left',
-             'floating': True,
-             'text': 'Winter Olympic '
-                     'Medal Wins'},
-  'xAxis': { 'categories': [ '',
-                             '1924 '
-                             'Chamonix',
-                             '1928 St. '
-                             'Moritz',
-                             '1932 '
-                             'Lake '
-                             'Placid',
-                             '1936 '
-                             'Garmisch-Partenkirchen',
-                             '1940 '
-                             '<i>Cancelled '
-                             '(Sapporo)</i>',
-                             '1944 '
-                             '<i>Cancelled '
-                             '(Cortina '
-                             "d'Ampezzo)</i>",
-                             '1948 St. '
-                             'Moritz',
-                             '1952 '
-                             'Oslo',
-                             '1956 '
-                             'Cortina '
-                             "d'Ampezzo",
-                             '1960 '
-                             'Squaw '
-                             'Valley',
-                             '1964 '
-                             'Innsbruck',
-                             '1968 '
-                             'Grenoble',
-                             '1972 '
-                             'Sapporo',
-                             '1976 '
-                             'Innsbruck',
-                             '1980 '
-                             'Lake '
-                             'Placid',
-                             '1984 '
-                             'Sarajevo',
-                             '1988 '
-                             'Calgary',
-                             '1992 '
-                             'Albertville',
-                             '1994 '
-                             'Lillehammer',
-                             '1998 '
-                             'Nagano',
-                             '2002 '
-                             'Salt '
-                             'Lake '
-                             'City',
-                             '2006 '
-                             'Turin',
-                             '2010 '
-                             'Vancouver',
-                             '2014 '
-                             'Sochi'],
-             'crosshair': True,
-             'labels': { 'align': 'left',
-                         'reserveSpace': False,
-                         'rotation': 270},
-             'lineWidth': 0,
-             'margin': 20,
-             'maxPadding': 0,
-             'tickWidth': 0,
-             'type': 'category'},
-  'yAxis': { 'endOnTick': False,
-             'startOnTick': False,
-             'visible': False}}
+    # Configurazione del grafico
+    chart_style = {
+        "labels": {
+            "items": [
+                {
+                    "html": "Distribution of Style Consistency",
+                    "style": {"color": "black", "left": "50px", "top": "18px"},
+                }
+            ]
+        },
+        "series": [
+            {
+                "data": bar_values,
+                "name": "Average Style Consistency",
+                "type": "column",
+                "colorByPoint": True,
+            },
+            {
+                "center": [500, 10],
+                "data": pie_values,
+                "dataLabels": {"enabled": True},
+                "name": "Consistency Range",
+                "showInLegend": True,
+                "size": 100,
+                "type": "pie",
+            },
+        ],
+        "title": {
+            "text": "Style Consistency Analysis",
+            "align": "left",
+        },
+        "xAxis": {"categories": categories, "title": {"text": "Model Name"}},
+        "yAxis": {"title": {"text": "Style Consistency (Average)"}},
+    }
 
+    # Visualizzazione del grafico con streamlit_highcharts
+    hg.streamlit_highcharts(chart_style, height=540)
 
-    hg.streamlit_highcharts(chartDef,550)
+    
+      # Raggruppiamo per model_name e jail_prompt_id e calcoliamo la media di style_consistency per ogni gruppo
+    df_grouped = df.groupby(['model_name', 'jail_prompt_id'])['style_consistency'].mean().reset_index()
+
+    # Creiamo una lista di dati per ciascun 'model_name'
+    series_data = []
+    model_names = df_grouped['model_name'].unique()
+
+    for model in model_names:
+        model_data = df_grouped[df_grouped['model_name'] == model]
+        series_data.append({
+            'name': model,
+            'data': model_data['style_consistency'].tolist()
+        })
+
+    # Definizione del grafico Highcharts
+    chartDef = {
+        'chart': {
+            'type': 'line',  # Puoi cambiare il tipo di grafico, ad esempio 'streamgraph', 'line', ecc.
+            'zoomType': 'x'
+        },
+        'title': {
+            'text': 'Style Consistency Scores per ciascun Model e Jail Prompt'
+        },
+        'xAxis': {
+            'categories': df_grouped['jail_prompt_id'].unique().tolist(),  # Usato per le etichette dell'asse X
+            'crosshair': True
+        },
+        'yAxis': {
+            'title': {
+                'text': 'Style Consistency Score'
+            }
+        },
+        'legend': {
+            'enabled': True
+        },
+        'series': series_data,  # I dati per le serie dei vari modelli
+        'plotOptions': {
+            'line': {
+                'dataLabels': {
+                    'enabled': False
+                },
+                'enableMouseTracking': True
+            }
+        }
+    }
+
+    # Mostriamo il grafico in Streamlit
+    hg.streamlit_highcharts(chartDef, 550)          
 
 # consistency 
 
@@ -1530,3 +454,438 @@ La consistenza delle risposte è una metrica chiave per comprendere se il modell
 -La frequenza dei punteggi di consistenza (1-5).  
 -La capacità dei modelli di fornire risposte precise.
 """)
+    
+
+    # Creazione di intervalli per la distribuzione
+    df["consistency_range"] = pd.cut(
+        df["consistency"], bins=[0, 2, 4, 5], labels=["1-2", "3-4", "5"]
+    )
+
+    # Dati per il grafico a barre (media di style_consistency per modello)
+    bar_data = df.groupby("model_name")["consistency"].mean().reset_index()
+    categories = bar_data["model_name"].tolist()
+    bar_values = bar_data["consistency"].tolist()
+
+    # Dati per il grafico a torta (distribuzione degli intervalli)
+    pie_data = (
+        df["consistency_range"]
+        .value_counts()
+        .sort_index()
+        .reset_index()
+        .rename(columns={"index": "range", "consistency_range": "count"})
+    )
+    pie_values = [{"name": row["range"], "y": row["count"]} for _, row in pie_data.iterrows()]
+
+    # Configurazione del grafico
+    chart_style = {
+        "labels": {
+            "items": [
+                {
+                    "html": "Distribution of Consistency",
+                    "style": {"color": "black", "left": "50px", "top": "18px"},
+                }
+            ]
+        },
+        "series": [
+            {
+                "data": bar_values,
+                "name": "Average Consistency",
+                "type": "column",
+                "colorByPoint": True,
+            },
+            {
+                "center": [500, 0],
+                "data": pie_values,
+                "dataLabels": {"enabled": True},
+                "name": "Consistency Range",
+                "showInLegend": True,
+                "size": 50,
+                "type": "pie",
+            },
+        ],
+        "title": {
+            "text": "Consistency Analysis",
+            "align": "left",
+        },
+        "xAxis": {"categories": categories, "title": {"text": "Model Name"}},
+        "yAxis": {"title": {"text": "Consistency (Average)"}},
+    }
+
+    # Visualizzazione del grafico con streamlit_highcharts
+    hg.streamlit_highcharts(chart_style, height=540)
+
+    
+      # Raggruppiamo per model_name e jail_prompt_id e calcoliamo la media di style_consistency per ogni gruppo
+    df_grouped = df.groupby(['model_name', 'jail_prompt_id'])['consistency'].mean().reset_index()
+
+    # Creiamo una lista di dati per ciascun 'model_name'
+    series_data = []
+    model_names = df_grouped['model_name'].unique()
+
+    for model in model_names:
+        model_data = df_grouped[df_grouped['model_name'] == model]
+        series_data.append({
+            'name': model,
+            'data': model_data['consistency'].tolist()
+        })
+
+    # Definizione del grafico Highcharts
+    chartDef = {
+        'chart': {
+            'type': 'line',  # Puoi cambiare il tipo di grafico, ad esempio 'streamgraph', 'line', ecc.
+            'zoomType': 'x'
+        },
+        'title': {
+            'text': 'Consistency Scores per ciascun Model e Jail Prompt'
+        },
+        'xAxis': {
+            'categories': df_grouped['jail_prompt_id'].unique().tolist(),  # Usato per le etichette dell'asse X
+            'crosshair': True
+        },
+        'yAxis': {
+            'title': {
+                'text': 'Consistency Score'
+            }
+        },
+        'legend': {
+            'enabled': True
+        },
+        'series': series_data,  # I dati per le serie dei vari modelli
+        'plotOptions': {
+            'line': {
+                'dataLabels': {
+                    'enabled': False
+                },
+                'enableMouseTracking': True
+            }
+        }
+    }
+
+    # Mostriamo il grafico in Streamlit
+    hg.streamlit_highcharts(chartDef, 550) 
+
+with elements("chart_severity"):
+  st.markdown("""**4. Distribuzione Gravità della Risposta**  
+  **Descrizione**:  
+  -Mostra come si distribuiscono i punteggi di gravità assegnati alle risposte dei modelli, indicando il livello di severità o permissività.  
+  **Motivazione**:  
+  La gravità della risposta è un indicatore del livello di moderazione applicato dal modello nelle sue risposte, in particolare per richieste eticamente discutibili.                       
+  **Cosa Mostra**:  
+  -Se i modelli tendono a rispondere in modo più permissivo o restrittivo.  
+  -Le variazioni di severità nelle risposte. """)
+
+  #TOGGLE BUTTON 
+  typo = st.toggle("Severity distribution per model", True)
+
+  if typo:
+    # Supponiamo che 'df' sia il tuo dataframe
+    df['severity'] = pd.to_numeric(df['severity'], errors='coerce')
+
+    # Raggruppiamo i dati per model_name e calcoliamo la media di severity per ciascun modello
+    aggregated_data = df.groupby('model_name')['severity'].mean().reset_index()
+
+    # Creiamo i dati per la serie
+    tile_data = [
+        {
+            'hc-a2': model,
+            'name': model,
+            'value': severity,
+            'x': idx,  # Puoi scegliere una logica per assegnare valori x
+            'y': 0,  # Posizionamento statico, puoi modificarlo per ordinarli
+        }
+        for idx, (model, severity) in enumerate(zip(aggregated_data['model_name'], aggregated_data['severity']))
+    ]
+
+    # Definiamo il grafico
+    chartDef = {
+        'chart': {
+            'height': '80%',
+            'type': 'tilemap'
+        },
+        'colorAxis': {
+            'dataClasses': [
+                {'color': '#FF2371', 'from': 4.5, 'name': 'Severity 5', 'to': 5},
+                {'color': '#FF7987', 'from': 3.5, 'name': 'Severity 4', 'to': 4.5},
+                {'color': '#FFC428', 'from': 2.5, 'name': 'Severity 3', 'to': 3.5},
+                {'color': '#F9EDB3', 'from': 1.5, 'name': 'Severity 2', 'to': 2.5},
+                {'color': '#D3F5D9', 'from': 0, 'name': 'Severity 1', 'to': 1.5}
+            ]
+        },
+        'plotOptions': {
+            'series': {
+                'dataLabels': {
+                    'color': '#000000',
+                    'enabled': True,
+                    'format': '{point.hc-a2}',
+                    'style': {'textOutline': False}
+                }
+            }
+        },
+        'series': [{
+            'data': tile_data,
+            'name': 'Severity Scores'
+        }],
+        'subtitle': {
+            'text': 'Source: Custom Data'
+        },
+        'title': {
+            'text': 'Model Severity Scores'
+        },
+        'tooltip': {
+            'headerFormat': '',
+            'pointFormat': 'The severity score of <b>{point.name}</b> is <b>{point.value}</b>'
+        },
+        'xAxis': {'visible': False},
+        'yAxis': {'visible': False}
+    }
+
+    # Visualizzazione del grafico in Streamlit
+    hg.streamlit_highcharts(chartDef, 640)
+  else:
+    # per ciascun jail_prompt_id, calcoliamo la media di severity per ciascun model_name 
+
+    # Supponiamo che 'df' sia il tuo dataframe
+    df['severity'] = pd.to_numeric(df['severity'], errors='coerce')
+
+    # Raggruppiamo i dati per jail_prompt_id e calcoliamo la media di severity per ciascun jail_prompt_id
+    aggregated_data = df.groupby('jail_prompt_id')['severity'].mean().reset_index()
+
+    # Creiamo i dati per la serie
+    tile_data = [
+        {
+            'hc-a2': jail_prompt,  # Ogni 'jail_prompt_id'
+            'name': jail_prompt,   # Nome associato al 'jail_prompt_id'
+            'value': severity,     # Il valore medio della severity
+            'x': idx,  # Puoi scegliere una logica per assegnare valori x
+            'y': 0,     # Posizionamento statico
+        }
+        for idx, (jail_prompt, severity) in enumerate(zip(aggregated_data['jail_prompt_id'], aggregated_data['severity']))
+    ]
+
+    # Definiamo il grafico
+    chartDef = {
+        'chart': {
+            'height': '60%',
+            'type': 'tilemap'
+        },
+        'colorAxis': {
+            'dataClasses': [
+                {'color': '#FF2371', 'from': 4.5, 'name': 'Severity 5', 'to': 5},
+                {'color': '#FF7987', 'from': 3.5, 'name': 'Severity 4', 'to': 4.5},
+                {'color': '#FFC428', 'from': 2.5, 'name': 'Severity 3', 'to': 3.5},
+                {'color': '#F9EDB3', 'from': 1.5, 'name': 'Severity 2', 'to': 2.5},
+                {'color': '#D3F5D9', 'from': 0, 'name': 'Severity 1', 'to': 1.5}
+            ]
+        },
+        'plotOptions': {
+            'series': {
+                'dataLabels': {
+                    'color': '#000000',
+                    'enabled': True,
+                    'format': '{point.hc-a2}',
+                    'style': {'textOutline': False}
+                }
+            }
+        },
+        'series': [{
+            'data': tile_data,
+            'name': 'Severity Scores'
+        }],
+        'subtitle': {
+            'text': 'Source: Custom Data'
+        },
+        'title': {
+            'text': 'Jail Prompt Severity Scores'
+        },
+        'tooltip': {
+            'headerFormat': '',
+            'pointFormat': 'The severity score of <b>{point.name}</b> is <b>{point.value}</b>'
+        },
+        'xAxis': {'visible': False},
+        'yAxis': {'visible': False}
+    }
+
+    # Visualizzazione del grafico in Streamlit
+    hg.streamlit_highcharts(chartDef, 640)
+
+
+with elements("chart_disclaimer"):
+    st.markdown("""**5. Presenza di Disclaimer per Modello**  
+              **Descrizione**:  
+              - Confronta la presenza di disclaimer nelle risposte (`True`/`False`) per ciascun modello.  
+              - Ogni barra rappresenta il conteggio di risposte con o senza disclaimer per un modello specifico.                                      
+              **Motivazione**:  
+              I disclaimer sono un indicatore di responsabilità etica, mostrando come i modelli cercano di prevenire potenziali danni.                             
+              **Cosa Mostra**:  
+              - La frequenza con cui ciascun modello include disclaimer.  
+              - La tendenza di ciascun modello a enfatizzare considerazioni etiche. """)
+    
+    # Filtriamo i dati per includere tutte le righe, indipendentemente dal valore di disclaimer
+    df_disclaimer = df[['model_name', 'disclaimer']]
+
+    # Dati per il grafico a barre (conteggio dei valori di disclaimer True e False per ogni modello)
+    bar_data = df_disclaimer.groupby(['model_name', 'disclaimer']).size().unstack(fill_value=0)
+
+    # Riorganizziamo i dati in modo che "True" e "False" siano separati in colonne
+    categories = bar_data.index.tolist()
+    true_values = bar_data[True].tolist()  # Conta i True per ciascun model_name
+    false_values = bar_data[False].tolist()  # Conta i False per ciascun model_name
+
+    # Configurazione del grafico
+    chart_style = {
+        "labels": {
+            "items": [
+                {
+                    "html": "Disclaimer Distribution (True vs False)",
+                    "style": {"color": "black", "left": "50px", "top": "18px"},
+                }
+            ]
+        },
+        "series": [
+            {
+                "data": true_values,
+                "name": "Disclaimer True",
+                "type": "column",
+                "color": "#1f77b4",  # Colore per True
+            },
+            {
+                "data": false_values,
+                "name": "Disclaimer False",
+                "type": "column",
+                "color": "#ff7f0e",  # Colore per False
+            },
+        ],
+        "title": {
+            "text": "Disclaimer Distribution per Model",
+            "align": "left",
+        },
+        "xAxis": {
+            "categories": categories,
+            "title": {"text": "Model Name"},
+        },
+        "yAxis": {
+            "title": {"text": "Count of Disclaimer Values (True/False)"},
+        },
+    }
+
+    # Visualizzazione del grafico con streamlit_highcharts
+    hg.streamlit_highcharts(chart_style, height=540)
+      
+
+
+    
+with elements("chart_distribution_jail"):
+  st.markdown("""**6. Distribuzione del Successo del Jailbreaking per Modello**  
+  **Descrizione**:  
+  -Mostra la percentuale di successo dei jailbreak per ciascun modello.                        
+  **Motivazione**:  
+  È utile per identificare quali modelli sono più vulnerabili al jailbreaking e quindi meno robusti.                  
+  **Cosa Mostra**:  
+  -Il livello di successo dei jailbreak su diversi modelli.  
+  -Quali modelli richiedono maggiore attenzione per mitigare i prompt di jailbreak. """)
+  # Calcoliamo la percentuale di successo del jailbreak per ciascun model_name
+  success_percentage = (
+      df.groupby("model_name")["jailbreak_success"]
+      .apply(lambda x: (x == True).mean() * 100)  # Calcoliamo la percentuale di successo
+      .reset_index()
+      .rename(columns={"jailbreak_success": "success_percentage"})
+  )
+
+  # Dati per il grafico a barre (percentuale di successo per ciascun model_name)
+  categories = success_percentage["model_name"].tolist()
+  bar_values = success_percentage["success_percentage"].tolist()
+
+  # Configurazione del grafico
+  chart_style = {
+      "labels": {
+          "items": [
+              {
+                  "html": "Jailbreak Success Percentage per Model",
+                  "style": {"color": "black", "left": "50px", "top": "18px"},
+              }
+          ]
+      },
+      "series": [
+          {
+              "data": bar_values,
+              "name": "Jailbreak Success Percentage",
+              "type": "column",
+              "colorByPoint": True,
+          }
+      ],
+      "title": {
+          "text": "Jailbreak Success Percentage Analysis",
+          "align": "left",
+      },
+      "xAxis": {
+          "categories": categories,
+          "title": {"text": "Model Name"},
+      },
+      "yAxis": {
+          "title": {"text": "Success Percentage (%)"},
+          "max": 100,  # Impostiamo il limite massimo dell'asse Y a 100%
+      },
+  }
+
+  # Visualizzazione del grafico con streamlit_highcharts
+  hg.streamlit_highcharts(chart_style, height=540)
+
+
+with elements("chart_correlation"):
+    st.markdown("""**7. Matrice di Correlazione tra le Metriche**  
+                **Descrizione**:  
+                -Una matrice che mostra le correlazioni tra le metriche numeriche (aderenza allo stile, consistenza e gravità).            
+                **Motivazione**:  
+                Le correlazioni aiutano a individuare relazioni significative tra le metriche. Ad esempio, un'alta correlazione tra "gravità" e "consistenza" potrebbe suggerire che risposte più consistenti tendono a essere più severe.                      
+                **Cosa Mostra**:  
+                -Relazioni positive o negative tra le metriche.  
+                -Quali metriche sono più strettamente correlate. """)
+    
+
+    # Selezioniamo le colonne numeriche per il calcolo della correlazione
+    correlation_columns = ['style_consistency', 'consistency', 'severity', 'jailbreak_success']
+    df_corr = df[correlation_columns].copy()
+
+    # Calcoliamo la matrice di correlazione
+    correlation_matrix = df_corr.corr()
+
+    # Impostiamo la dimensione della figura per il grafico
+    plt.figure(figsize=(8, 6))
+
+    # Creiamo la mappa di calore (heatmap)
+    sns.heatmap(correlation_matrix, annot=True, cmap="crest", vmin=-1, vmax=1, cbar=True, square=True)
+
+    # Titolo e etichette
+    plt.title('Correlation Matrix Between Metrics', fontsize=14)
+    plt.tight_layout()
+
+    # Visualizza il grafico con Streamlit
+    st.pyplot(plt)
+
+
+with elements("chart_note"):
+    
+      st.markdown("""**8. Boxplot Comparativo delle Metriche per Modello**  
+    **Descrizione**:  
+    -Un grafico che mostra la distribuzione di tre metriche principali (aderenza allo stile, consistenza, gravità) per ciascun modello.                       
+    **Motivazione**:  
+    Un boxplot comparativo permette di confrontare i modelli in termini di performance su più dimensioni contemporaneamente.                 
+    **Cosa Mostra**:  
+    -La variabilità delle metriche per ogni modello.  
+    -Se esistono differenze significative tra i modelli su una metrica specifica. """)
+       
+      # Raccogliamo le metriche in un formato lungo per seaborn
+      df_long = df.melt(id_vars=["model_name"], value_vars=["style_consistency", "consistency", "severity"],
+                        var_name="metric", value_name="score")
+
+      # Creiamo il boxplot
+      plt.figure(figsize=(12, 6))
+      sns.boxplot(x="model_name", y="score", hue="metric", data=df_long, palette="Set2")
+
+      # Aggiungiamo il titolo e le etichette
+      plt.title("Comparative Boxplot of Metrics (style_consistency, consistency, severity)", fontsize=14)
+      plt.xlabel("Model Name", fontsize=12)
+      plt.ylabel("Score", fontsize=12)
+
+      # Visualizza il grafico in Streamlit
+      st.pyplot(plt)
