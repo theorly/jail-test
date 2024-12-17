@@ -152,12 +152,14 @@ with elements("activity_charts"):
     main_chart_data = [
         {
             'name': 'Success',
-            'y': int(success_counts[success_counts['jailbreak_success'] == True]['count']),
+            #'y': int(success_counts[success_counts['jailbreak_success'] == True]['count']),
+            'y': int(success_counts[success_counts['jailbreak_success'] == True]['count'].iloc[0]),
             'drilldown': 'success_details'
         },
         {
             'name': 'Failure',
-            'y': int(success_counts[success_counts['jailbreak_success'] == False]['count']),
+            #'y': int(success_counts[success_counts['jailbreak_success'] == False]['count']),
+            'y': int(success_counts[success_counts['jailbreak_success'] == False]['count'].iloc[0]),
             'drilldown': 'failure_details'
         }
     ]
