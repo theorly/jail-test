@@ -15,7 +15,11 @@ if "options" not in st.session_state:
 if "system_instruction" not in st.session_state:
     st.session_state.system_instruction = None
 
-folder = '/home/site/wwwroot/responses'
+#folder = '/home/site/wwwroot/responses'
+#output_dir = '/home/site/wwwroot/responses/analysis'  # Percorso all'interno del container
+folder  = '/Users/orlando/Desktop/Tesi/TEST/jail-test/results/folder_results'
+output_dir = '/Users/orlando/Desktop/Tesi/TEST/jail-test/results/analysis'
+log_files = '/Users/orlando/Desktop/Tesi/TEST/jail-test/results/'
 
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 
@@ -98,9 +102,7 @@ def gpt_response():
     return response.choices[0].message.content
 
 
-def save_response_to_json(response, filename):
-    # Crea una cartella per salvare i file JSON, se non esiste
-    output_dir = '/home/site/wwwroot/responses/analysis'  # Percorso all'interno del container
+def save_response_to_json(response, filename, file_log = 'log.txt'):
     
     os.makedirs(output_dir, exist_ok=True)
 
@@ -119,26 +121,39 @@ def save_response_to_json(response, filename):
     print(file)
 
     # Salva la risposta in un file JSON
-    with open(file, 'w') as json_file:
+    with open(file, 'w', encoding='utf-8') as json_file:
         json.dump(response, json_file, indent=4)
 
     print(f"Risposta salvata in: {filepath}")
+    # Scrivere nel file di log
+    log_path = os.path.join(log_files, file_log)
+    with open(log_path, 'a', encoding='utf-8') as log:
+        log.write(f"File salvato: {file}\n")
 
 
-def run_analysis():
+def run_analysis(file_log = 'log_error.txt'):
     for files in os.listdir(folder):
         file_path = os.path.join(folder, files)
         if os.path.isfile(file_path) and files.endswith('.json'):
-            saved_output = []
-            prompt = prompt_result + append_file_to_string(file_path) 
-            st.session_state.gpt_messages.append({"role": "user", "content": prompt})
-            response = gpt_response()
-            st.session_state.gpt_messages.append({"role": "assistant", "content": response})
-            saved_output.append({"role": "assistant", "content": response})
-            save_response_to_json(saved_output , files)
-            saved_output = []
-            st.session_state.gpt_messages = []
-
+            try:
+                saved_output = []
+                prompt = prompt_result + append_file_to_string(file_path) 
+                st.session_state.gpt_messages.append({"role": "user", "content": prompt})
+                response = gpt_response()
+                st.session_state.gpt_messages.append({"role": "assistant", "content": response})
+                saved_output.append({"role": "assistant", "content": response})
+                save_response_to_json(saved_output , files)
+                saved_output = []
+                st.session_state.gpt_messages = []
+                st.write(f"""Analisi del file {files} completata!""")
+            except Exception as e:
+                st.write(f"Errore nell'analisi del file {files}: {e}")
+                st.session_state.gpt_messages = []
+                saved_output = []
+                log_path = os.path.join(log_files, file_log)
+                with open(log_path, 'a', encoding='utf-8') as log:
+                    log.write(f"File salvato: {files}\n")
+                continue
 
 
 st.divider()
@@ -146,4 +161,5 @@ st.divider()
 button = st.button("Run Analysis") 
 
 if button:
-    run_analysis() 
+    run_analysis()
+    st.markdown("###Analysis completed!") 

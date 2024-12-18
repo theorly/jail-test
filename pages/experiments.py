@@ -27,7 +27,10 @@ genai.configure(api_key=GEMINI_API_KEY)
 # def paths 
 filepath_jailbreak = 'prompts/jail_prompts.xlsx'
 filepath_nojailbreak = 'prompts/requests_new.xlsx'
-folder_to_zip = '/home/site/wwwroot/responses'
+#folder_to_zip = '/home/site/wwwroot/responses'
+folder_to_zip = '/Users/orlando/Desktop/Tesi/TEST/jail-test/results/'
+#output_dir = '/home/site/wwwroot/responses'  # Percorso all'interno del container
+output_dir = '/Users/orlando/Desktop/Tesi/TEST/jail-test/results/'
 df_jailbreak = utils.file_to_dataframe(filepath_jailbreak)
 df_nojailbreak = utils.file_to_dataframe(filepath_nojailbreak) 
 
@@ -121,7 +124,6 @@ def zip_folder(folder_path):
 def save_response_to_json(response, prompt_type ,prompt_id, model_name, jail_prompt='#'):
     # Crea una cartella per salvare i file JSON, se non esiste
     current_time = datetime.now()
-    output_dir = '/home/site/wwwroot/responses'  # Percorso all'interno del container
     os.makedirs(output_dir, exist_ok=True)
 
     # Crea un nome file unico basato sul modello e sul prompt
@@ -321,6 +323,7 @@ def run_experiments(df_type, selected_data, selected_jail=None):
             
             save_response_to_json(saved_chat, type_ ,index, 'gemini')
             st.session_state.messages.append({"role": "assistant", "content": response})
+            saved_chat = []
             st.session_state.messages = []
 
             #run ChatGPT

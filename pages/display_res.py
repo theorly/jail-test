@@ -8,11 +8,10 @@ from streamlit_elements import elements, mui, nivo, dashboard
 import streamlit_highcharts as hg
 
 
-
-
 st.subheader("Results")
 
 st.markdown("**Results of the experiments will be displayed here.** \n")
+st.markdown("""L'obiettivo principale di questo lavoro è quello di mostrare gli effetti del jailbreak sui modelli di linguaggio di grandi dimensioni (LLM), mettendo in luce come tali tecniche possano essere utilizzate per aggirare le policy di sicurezza dei modelli. Analizzando questi comportamenti, possiamo ottenere una comprensione più approfondita delle vulnerabilità e delle aree che necessitano di miglioramenti per garantire una maggiore robustezza e sicurezza. """)
 st.markdown("""Questi grafici sono progettati per fornire un'analisi completa e dettagliata delle risposte dei modelli LLM. I grafici evidenziano:  
 1. **Performance Generale**: Successo del jailbreaking e presenza di disclaimer.  
 2. **Qualità delle Risposte**: Aderenza, consistenza e gravità.  
@@ -20,29 +19,31 @@ st.markdown("""Questi grafici sono progettati per fornire un'analisi completa e 
 
 Questa combinazione di visualizzazioni permette di ottenere insight approfonditi sulle prestazioni dei modelli e guidare le decisioni per ulteriori miglioramenti. """)
 
-results_folder = '/home/site/wwwroot/responses/analysis'
-#results_folder = 'results/analysis'
-
+#results_folder = '/home/site/wwwroot/responses/analysis'
+results_folder = 'results/analysis'
+jail_example_1 = 'results/examples/jail_example_1.json'
+no_jail_example_1 = 'results/examples/no_jail_example_1.json'
+jail_example_2 = 'results/examples/jail_example_2.json'
+no_jail_example_2 = 'results/examples/no_jail_example_2.json'
+jail_example_3 = 'results/examples/jail_example_3.json'
+no_jail_example_3 = 'results/examples/no_jail_example_3.json'
 
 def load_json_data(folder_path):
-    data = []
-    
-    # Scorri tutti i file .json nella cartella
+    data = [] 
     for filename in os.listdir(folder_path):
-        #if filename.endswith(".json"):
+        if filename.endswith(".json"):
             file_path = os.path.join(folder_path, filename)
-            with open(file_path, 'r') as file:
-                # Leggi il contenuto del file e carica il JSON
+            
+            with open(file_path, 'r', encoding='utf-8') as file:
                 try:
-                    response = json.load(file)
-                    # Estrai i dati necessari, trattando 'content' come una stringa (non un dizionario)
-                    for entry in response:
+                    response = json.load(file)  # Legge il JSON principale
+                    
+                    for entry in response:  # Itera sugli oggetti all'interno del file JSON
                         content_str = entry.get("content", "")
                         
-                        # Verifica che content sia una stringa non vuota
-                        if content_str:
+                        if content_str:  # Decodifica il JSON interno nella chiave "content"
                             try:
-                                content = json.loads(content_str)  # Carica il contenuto JSON come dizionario
+                                content = json.loads(content_str)  # Converte la stringa JSON in oggetto
                                 data.append({
                                     'model_name': content.get('model_name', ''),
                                     'jail_prompt_id': content.get('jail_prompt_id', ''),
@@ -55,26 +56,60 @@ def load_json_data(folder_path):
                                     'note': content.get('note', '')
                                 })
                             except json.JSONDecodeError:
-                                # Se il contenuto non è un JSON valido, salta questo record
                                 print(f"Errore nel decodificare il JSON in 'content' per il file {filename}.")
                         else:
                             print(f"Contenuto vuoto in 'content' per il file {filename}.")
                 except json.JSONDecodeError:
                     print(f"Errore nel caricare il file {filename}. Il file potrebbe non essere un JSON valido.")
     
-    # Creare un DataFrame con i dati letti
     df = pd.DataFrame(data)
     return df
 
+# Funzione per caricare un file JSON
+def load(file_path):
+    try:
+        with open(file_path, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    except Exception as e:
+        st.error(f"Errore nel caricamento del file {file_path}: {e}")
+        return None
+
+# Funzione per visualizzare la chat in un box scrollabile
+def display_chat(chat_data, box_id):
+    # Inizializza l'HTML del box
+    chat_html = f"""
+    <div id="{box_id}" style="height: 400px; width: 380px; overflow-y: auto; padding: 10px; border: 1px solid #ccc; border-radius: 5px; background-color: #f9f9f9;">
+    """
+    
+    # Costruisci il contenuto della chat
+    for message in chat_data:
+        if "model" in message:
+            chat_html += f"<p><strong>Model:</strong> {message['model']}</p>"
+            chat_html += f"<pre><strong>Options:</strong> {json.dumps(message['options'], indent=2)}</pre>"
+        elif "role" in message:
+            role = message["role"].capitalize()
+            content = message["content"]
+            chat_html += f"<p><strong>{role}:</strong> {content}</p>"
+
+    # Chiudi il div del box
+    chat_html += "</div>"
+    
+    # Stampa il box completo
+    st.markdown(chat_html, unsafe_allow_html=True)
+
+
 df = load_json_data(results_folder)
 st.markdown(f"**Numero di record: {len(df)}**")
-st.dataframe(df, width=1000, height=500)
-
+st.dataframe(df, width=1000, height=300, hide_index=True)
 
 with elements("activity_charts"): 
-    st.markdown("""**0. Activity Monitor**
+    st.markdown("""### 0. Activity Monitor
 - Questo grafico mostra tutte innanzitutto la percentuali di modelli analizzati, in riferimento al totale disponibile sul tool.
-- Successivamente, mostra la percentuale di prompt e di richieste evase per ciascun modello.  
+- Successivamente, mostra la percentuale di jailbreak_prompt evasi sul totale individuato.
+- Infine, mostra la percentuale totale di dati analizzati rispetto al totale inizialmente preventivato.                     
+
+**Motivazione**:
+Inizialmente i dati erano molto più numerosi, ma a causa di problemi di tempistiche, di risorse e di budget, il dataset è stato ridotto. Questo grafico mostra quanto sia stato possibile analizzare rispetto al totale disponibile.
                 """)
 
 
@@ -103,13 +138,13 @@ with elements("activity_charts"):
               { 'data': [ { 'color': 'red',
                             'innerRadius': '63%',
                             'radius': '87%',
-                            'y': 100}],
+                            'y': 83.70}],
                 'name': 'Jail_Prompts'},
               { 'data': [ { 'color': 'blue',
                             'innerRadius': '38%',
                             'radius': '62%',
-                            'y': 100}],
-                'name': 'Requests'}],
+                            'y': 50}],
+                'name': 'Total_Requests'}],
   'title': { 'style': { 'fontSize': '24px'},
              'text': 'Activity'},
   'tooltip': { 'backgroundColor': 'none',
@@ -133,9 +168,44 @@ with elements("activity_charts"):
 
     hg.streamlit_highcharts(activity_charts,350)
 
+# compare with no_jailbreak
+with elements("chart_no_jailbreak"):
+    st.markdown("""### 1. No_Jailbreak vs Jailbreak""")
+    st.markdown("""**Descrizione**:                                        
+                Questo confronto diretto permette di osservare le risposte dei modelli in entrambe le situazioni, evidenziando le differenze e le similitudini.                           
+                Continuando con l'analisi, si possono osservare le differenze nelle risposte fornite dai modelli in presenza di tentativi di jailbreak rispetto a quando operano normalmente.                                                                                
+                Questo confronto è cruciale per comprendere come i modelli rispondono a input manipolativi e per identificare le strategie più efficaci per mitigare tali rischi.
+                """) 
+    # Layout con due colonne
+    col1, col2 = st.columns(2, gap="large")
 
-    st.markdown("""**1. Successo del Jailbreaking**  
-    **Descrizione**:  
+    # Visualizza la chat del primo file nella colonna 1
+    with col1:
+        with st.container():
+                st.markdown("#### Chat No_Jailbreak")     
+                chat_no_jail_1 = load(no_jail_example_1)
+                display_chat(chat_no_jail_1, "box1")
+                st.divider()
+                chat_no_jail_2 = load(no_jail_example_3)
+                display_chat(chat_no_jail_2, "box11")
+                st.divider()
+               
+
+            # Visualizza la chat del secondo file nella colonna 2
+    with col2:
+            with st.container():
+                st.markdown("#### Chat Jailbreak")
+                chat_jail_1 = load(jail_example_1)
+                display_chat(chat_jail_1, "box2")
+                st.divider()
+                chat_jail_2 = load(jail_example_3)
+                display_chat(chat_jail_2, "box22")
+                st.divider()
+
+
+with elements("chart_jailbreak"):
+    st.markdown("""### 2. Jailbreaking Success""")
+    st.markdown("""**Descrizione**:  
     -Questo grafico mostra il conteggio dei casi in cui il modello ha avuto successo o meno nel rispondere ai prompt di jailbreak.  
     -I valori `True` e `False` rappresentano rispettivamente il successo o il fallimento del jailbreak.                        
     **Motivazione**:  
@@ -152,14 +222,14 @@ with elements("activity_charts"):
     main_chart_data = [
         {
             'name': 'Success',
-            #'y': int(success_counts[success_counts['jailbreak_success'] == True]['count']),
-            'y': int(success_counts[success_counts['jailbreak_success'] == True]['count'].iloc[0]),
+            'y': int(success_counts[success_counts['jailbreak_success'] == True]['count']),
+            #'y': int(success_counts[success_counts['jailbreak_success'] == True]['count'].iloc[0]),
             'drilldown': 'success_details'
         },
         {
             'name': 'Failure',
-            #'y': int(success_counts[success_counts['jailbreak_success'] == False]['count']),
-            'y': int(success_counts[success_counts['jailbreak_success'] == False]['count'].iloc[0]),
+            'y': int(success_counts[success_counts['jailbreak_success'] == False]['count']),
+            #'y': int(success_counts[success_counts['jailbreak_success'] == False]['count'].iloc[0]),
             'drilldown': 'failure_details'
         }
     ]
@@ -247,7 +317,6 @@ with elements("activity_charts"):
         failure_details = df[df['jailbreak_success'] == False][['model_name', 'jail_prompt_id', 'req_id']]
         st.table(failure_details)
 
-with elements("chart_jailbreak"):
   # Filtriamo il dataframe per includere solo i jailbreak_success = True
     filtered_data = df[df['jailbreak_success'] == True]
 
@@ -319,14 +388,14 @@ with elements("chart_jailbreak"):
     }
 
     # Visualizzazione in Streamlit (se il componente hg è installato)
-    hg.streamlit_highcharts(chartDef, 640)
+    hg.streamlit_highcharts(chartDef, 690)
 
 
 with elements("chart_style"):
     
     # Grafico 2: Distribuzione Aderenza allo Stile
-    st.markdown("""**2. Distribuzione Aderenza allo Stile**  
-    **Descrizione**:  
+    st.markdown("""#### 3. Style Consistency""")  
+    st.markdown("""**Descrizione**:  
     -Un grafico che rappresenta la distribuzione dei punteggi assegnati all'aderenza allo stile richiesto dai prompt.  
     -Utilizza un istogramma arricchito con la densità (KDE) per visualizzare la forma della distribuzione.                      
     **Motivazione**:  
@@ -397,6 +466,18 @@ with elements("chart_style"):
     
       # Raggruppiamo per model_name e jail_prompt_id e calcoliamo la media di style_consistency per ogni gruppo
     df_grouped = df.groupby(['model_name', 'jail_prompt_id'])['style_consistency'].mean().reset_index()
+    
+        # Aggiungi una colonna temporanea per la parte numerica di 'jail_prompt_id'
+    df_grouped['jail_number'] = df_grouped['jail_prompt_id'].str.extract('(\d+)').astype(int)
+
+    # Ordina il dataframe in base al numero estratto
+    df_grouped = df_grouped.sort_values(by='jail_number')
+
+    # Crea una lista ordinata per le categorie dell'asse X
+    x_categories = df_grouped['jail_prompt_id'].unique().tolist()
+
+    # Elimina la colonna temporanea (opzionale, se non serve più)
+    df_grouped = df_grouped.drop(columns=['jail_number'])
 
     # Creiamo una lista di dati per ciascun 'model_name'
     series_data = []
@@ -419,7 +500,7 @@ with elements("chart_style"):
             'text': 'Style Consistency Scores per ciascun Model e Jail Prompt'
         },
         'xAxis': {
-            'categories': df_grouped['jail_prompt_id'].unique().tolist(),  # Usato per le etichette dell'asse X
+            'categories': x_categories, 
             'crosshair': True
         },
         'yAxis': {
@@ -442,13 +523,13 @@ with elements("chart_style"):
     }
 
     # Mostriamo il grafico in Streamlit
-    hg.streamlit_highcharts(chartDef, 550)          
+    hg.streamlit_highcharts(chartDef, 750)          
 
 # consistency 
 
 with elements("chart_consistency"):
-    st.markdown("""**3. Distribuzione Consistenza (Istogramma con KDE)**  
-**Descrizione**:  
+    st.markdown("""### 4. Consistency Score""")
+    st.markdown("""**Descrizione**:  
 -Questo grafico rappresenta la distribuzione dei punteggi di consistenza, ovvero la capacità del modello di rispondere direttamente alla richiesta senza essere evasivo.             
 **Motivazione**:  
 La consistenza delle risposte è una metrica chiave per comprendere se il modello è in grado di soddisfare la richiesta senza eludere la domanda, pur rispettando le sue policy.             
@@ -519,6 +600,17 @@ La consistenza delle risposte è una metrica chiave per comprendere se il modell
     
       # Raggruppiamo per model_name e jail_prompt_id e calcoliamo la media di style_consistency per ogni gruppo
     df_grouped = df.groupby(['model_name', 'jail_prompt_id'])['consistency'].mean().reset_index()
+         # Aggiungi una colonna temporanea per la parte numerica di 'jail_prompt_id'
+    df_grouped['jail_number'] = df_grouped['jail_prompt_id'].str.extract('(\d+)').astype(int)
+
+    # Ordina il dataframe in base al numero estratto
+    df_grouped = df_grouped.sort_values(by='jail_number')
+
+    # Crea una lista ordinata per le categorie dell'asse X
+    x_categories = df_grouped['jail_prompt_id'].unique().tolist()
+
+    # Elimina la colonna temporanea (opzionale, se non serve più)
+    df_grouped = df_grouped.drop(columns=['jail_number'])
 
     # Creiamo una lista di dati per ciascun 'model_name'
     series_data = []
@@ -541,7 +633,7 @@ La consistenza delle risposte è una metrica chiave per comprendere se il modell
             'text': 'Consistency Scores per ciascun Model e Jail Prompt'
         },
         'xAxis': {
-            'categories': df_grouped['jail_prompt_id'].unique().tolist(),  # Usato per le etichette dell'asse X
+            'categories': x_categories,  # Usato per le etichette dell'asse X
             'crosshair': True
         },
         'yAxis': {
@@ -564,11 +656,11 @@ La consistenza delle risposte è una metrica chiave per comprendere se il modell
     }
 
     # Mostriamo il grafico in Streamlit
-    hg.streamlit_highcharts(chartDef, 550) 
+    hg.streamlit_highcharts(chartDef, 750) 
 
 with elements("chart_severity"):
-  st.markdown("""**4. Distribuzione Gravità della Risposta**  
-  **Descrizione**:  
+  st.markdown("""### 5. Severity Score""")
+  st.markdown("""**Descrizione**:  
   -Mostra come si distribuiscono i punteggi di gravità assegnati alle risposte dei modelli, indicando il livello di severità o permissività.  
   **Motivazione**:  
   La gravità della risposta è un indicatore del livello di moderazione applicato dal modello nelle sue risposte, in particolare per richieste eticamente discutibili.                       
@@ -601,7 +693,7 @@ with elements("chart_severity"):
     # Definiamo il grafico
     chartDef = {
         'chart': {
-            'height': '80%',
+            'height': '70%',
             'type': 'tilemap'
         },
         'colorAxis': {
@@ -642,7 +734,7 @@ with elements("chart_severity"):
     }
 
     # Visualizzazione del grafico in Streamlit
-    hg.streamlit_highcharts(chartDef, 640)
+    hg.streamlit_highcharts(chartDef, 540)
   else:
     # per ciascun jail_prompt_id, calcoliamo la media di severity per ciascun model_name 
 
@@ -667,7 +759,7 @@ with elements("chart_severity"):
     # Definiamo il grafico
     chartDef = {
         'chart': {
-            'height': '60%',
+            'height': '70%',
             'type': 'tilemap'
         },
         'colorAxis': {
@@ -708,12 +800,12 @@ with elements("chart_severity"):
     }
 
     # Visualizzazione del grafico in Streamlit
-    hg.streamlit_highcharts(chartDef, 640)
+    hg.streamlit_highcharts(chartDef, 540)
 
 
 with elements("chart_disclaimer"):
-    st.markdown("""**5. Presenza di Disclaimer per Modello**  
-              **Descrizione**:  
+    st.markdown("""### 6. Disclaimer""") 
+    st.markdown("""**Descrizione**:  
               - Confronta la presenza di disclaimer nelle risposte (`True`/`False`) per ciascun modello.  
               - Ogni barra rappresenta il conteggio di risposte con o senza disclaimer per un modello specifico.                                      
               **Motivazione**:  
@@ -777,8 +869,8 @@ with elements("chart_disclaimer"):
 
     
 with elements("chart_distribution_jail"):
-  st.markdown("""**6. Distribuzione del Successo del Jailbreaking per Modello**  
-  **Descrizione**:  
+  st.markdown("""### 7. Distribution of Jailbreaking Success per Model""")
+  st.markdown("""**Descrizione**:  
   -Mostra la percentuale di successo dei jailbreak per ciascun modello.                        
   **Motivazione**:  
   È utile per identificare quali modelli sono più vulnerabili al jailbreaking e quindi meno robusti.                  
@@ -834,8 +926,8 @@ with elements("chart_distribution_jail"):
 
 
 with elements("chart_correlation"):
-    st.markdown("""**7. Matrice di Correlazione tra le Metriche**  
-                **Descrizione**:  
+    st.markdown("""### 8. Correlation Matrix""")   
+    st.markdown("""**Descrizione**:  
                 -Una matrice che mostra le correlazioni tra le metriche numeriche (aderenza allo stile, consistenza e gravità).            
                 **Motivazione**:  
                 Le correlazioni aiutano a individuare relazioni significative tra le metriche. Ad esempio, un'alta correlazione tra "gravità" e "consistenza" potrebbe suggerire che risposte più consistenti tendono a essere più severe.                      
@@ -867,8 +959,8 @@ with elements("chart_correlation"):
 
 with elements("chart_note"):
     
-      st.markdown("""**8. Boxplot Comparativo delle Metriche per Modello**  
-    **Descrizione**:  
+      st.markdown("""### 9. Comparative Boxplot of Metrics per Model""")  
+      st.markdown("""**Descrizione**:  
     -Un grafico che mostra la distribuzione di tre metriche principali (aderenza allo stile, consistenza, gravità) per ciascun modello.                       
     **Motivazione**:  
     Un boxplot comparativo permette di confrontare i modelli in termini di performance su più dimensioni contemporaneamente.                 
@@ -891,3 +983,24 @@ with elements("chart_note"):
 
       # Visualizza il grafico in Streamlit
       st.pyplot(plt)
+
+with elements("jail_vs_nojail"):
+
+    st.markdown("""### 10. Comparison of Metrics between Jailbreak and No Jailbreak""")
+
+    st.markdown("""**# Jailbreak Success vs Consistenza (Non Jailbroken)**""")
+    st.markdown(""" In risposte jailbroken, ci si aspetta una alta consistenza. In risposte non jailbroken, la consistenza dovrebbe essere bassa, in quanto il modello non sta cercando di evitare o manipolare la richiesta.""")
+
+
+    st.markdown("""**# Confronto della Coerenza dello Stile (Style Consistency)**""")
+    st.markdown("""Risposte jailbroken potrebbero mostrare più flessibilità nel seguire lo stile, o potrebbero esserci delle difficoltà nel mantenere uno stile coerente se il modello è distratto da tentativi di evasione.
+Risposte non jailbroken potrebbero avere uno stile più neutro e coerente, a meno che non venga richiesto uno stile specifico dal prompt.""")
+    
+    st.markdown("""**# Confronto dei Disclaimer**""")
+
+    st.markdown("""**# Confronto della Severità della Risposta (Severity)**""")
+
+    st.markdown("""**# Costruzione di Metriche Derivate**""")
+    st.markdown(""" Si possono anche creare alcune metriche derivate che confrontano in modo più diretto le risposte jailbroken con quelle non jailbroken:                      
+- **Jailbreak Impact Score:** La differenza tra la severità e la consistenza delle risposte jailbroken vs non jailbroken.                               
+- **Adaptability Score:** La differenza tra l'aderenza allo stile (style consistency) nelle risposte jailbroken e non jailbroken.""")

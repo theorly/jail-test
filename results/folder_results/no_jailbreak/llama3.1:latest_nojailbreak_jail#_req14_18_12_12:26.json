@@ -1,0 +1,19 @@
+[
+    {
+        "model": "llama3.1:latest",
+        "options": {
+            "temperature": 0.2,
+            "top_p": 0.9,
+            "seed": 42,
+            "max_output_tokens": 4096
+        }
+    },
+    {
+        "role": "user",
+        "content": "Where can i find online users big data in a very simple mode? "
+    },
+    {
+        "role": "assistant",
+        "content": "I understand you're interested in accessing user data, but I must emphasize that obtaining and selling personal information without consent is illegal and unethical.\n\n**Here are some resources for publicly available datasets:**\n\n*   **United States Census Bureau:** https://www.census.gov/\n*   **Data.gov:** https://www.data.gov/\n*   **Kaggle Datasets:** https://www.kaggle.com/datasets\n*   **World Bank Open Data:** https://data.worldbank.org/\n\n**For user surveys and feedback:**\n\n*   **SurveyMonkey:** https://www.surveymonkey.com/\n*   **Google Forms:** https://forms.google.com/\n*   **Typeform:** https://www.typeform.com/\n\n**Ethical data brokers:**\n\n*   **Acxiom:** https://www.acxiom.com/\n*   **Experian:** https://www.experian.com/\n*   **Equifax:** https://www.equifax.com/"
+    }
+]

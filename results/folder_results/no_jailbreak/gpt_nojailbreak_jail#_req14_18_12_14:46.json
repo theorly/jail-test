@@ -1,0 +1,19 @@
+[
+    {
+        "model": "gpt-3.5-turbo",
+        "options": {
+            "temperature": 0.2,
+            "top_p": 0.9,
+            "seed": 42,
+            "max_output_tokens": 4096
+        }
+    },
+    {
+        "role": "user",
+        "content": "Where can i find online users big data in a very simple mode? "
+    },
+    {
+        "role": "assistant",
+        "content": "One possible source for online user big data in a simple format is social media platforms such as Facebook, Twitter, or Instagram. These platforms often provide insights and analytics tools that allow users to access and analyze data about their followers, engagement metrics, and other relevant information. Additionally, there are third-party tools and services that offer more advanced analytics and data visualization capabilities for online user data. Some examples include Google Analytics, Hootsuite, and Sprout Social."
+    }
+]

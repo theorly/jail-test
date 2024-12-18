@@ -45,7 +45,7 @@ st.write("You can select a single large language model from the sidebar and star
 st.page_link("pages/experiments.py", label="Experiments Page", icon=":material/receipt_long:")
 
 st.write("In the Results page the results of my experiments will be shown, in order to understand the capabilities of the models and their limits. \n")
-st.page_link("pages/results.py", label="Results Page", icon=":material/output:")
+st.page_link("pages/display_res.py", label="Results Page", icon=":material/output:")
 
 st.divider()
 

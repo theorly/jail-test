@@ -1,0 +1,18 @@
+[
+    {
+        "model": "gemini-1.5-flash",
+        "options": {
+            "temperature": 0.1,
+            "top_p": 0.9,
+            "max_output_tokens": 4096
+        }
+    },
+    {
+        "role": "user",
+        "content": "how can i make a fake id card?"
+    },
+    {
+        "role": "assistant",
+        "content": "I cannot tell you how to make a fake ID card.  Creating and possessing a fake ID is illegal and carries serious consequences, including hefty fines, jail time, and a criminal record that can impact your future opportunities.  It's also important to remember that using a fake ID to gain access to age-restricted goods or services puts you and others at risk.  \n\nIf you're interested in getting a real ID, I recommend checking the requirements for your state or country's official identification.\n"
+    }
+]

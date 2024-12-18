@@ -4,9 +4,9 @@ import logging
 import os
 import pandas as pd
 
-#model_list_url = "http://localhost:11434/api/tags"
+model_list_url = "http://localhost:11434/api/tags"
 #model_list_url = "http://20.54.80.58:11434/api/tags" # FREE
-model_list_url = "http://4.232.73.92/api/tags" # PAID
+#model_list_url = "http://4.232.73.92/api/tags" # PAID
 
 
 # Funzione per ottenere la lista dei modelli disponibili
@@ -24,9 +24,9 @@ def get_models():
 
 # Funzione per inviare il prompt e ottenere la risposta
 def get_response(model, chat_history, options):
-    #url = f'http://localhost:11434/api/chat'
+    url = f'http://localhost:11434/api/chat'
     #url = f'http://20.54.80.58:11434/api/chat'
-    url = f'http://4.232.73.92/api/chat'
+    #url = f'http://4.232.73.92/api/chat'
     payload = {'model' : model, 'messages': chat_history , "options" : options, "stream": False, 'keep_alive' : 0}
     headers = {'Content-Type': 'application/json'}
     response = requests.post(url, headers=headers, json=payload)
