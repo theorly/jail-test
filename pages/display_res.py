@@ -415,9 +415,45 @@ with elements("chart_style"):
     categories = bar_data["model_name"].tolist()
     bar_values = bar_data["style_consistency"].tolist()
 
+
+    ###PROVA 
+    # Calcolare il conteggio di style_consistency per ogni modello
+    style_counts = df.groupby(["model_name", "style_consistency"]).size().unstack(fill_value=0)
+
+    # Creazione della definizione del grafico
+    chartDef = {
+        "chart": {"type": "column"},
+        "title": {"text": "Distribution of Style Consistency per Model"},
+        "xAxis": {
+            "categories": style_counts.index.tolist(),
+            "title": {"text": "Model Name"}
+        },
+        "yAxis": {
+            "min": 0,
+            "title": {"text": "Count"}
+        },
+        "series": [
+            {
+                "name": f"Style Consistency {col}",
+                "data": style_counts[col].tolist(),
+            }
+            for col in style_counts.columns
+        ]
+    }
+
+# Visualizzazione del grafico
+    hg.streamlit_highcharts(chartDef, 640)
+
+
     # Dati per il grafico a torta (distribuzione degli intervalli)
 
-    
+    pie_data = pd.DataFrame(columns=['range', 'count'])
+    pie_data['range'] = ['1-2', '3-4', '5']
+    pie_data['count'] = [0, 0, 0] # Inizializza tutti i valori a 0
+    pie_data.at[0, 'count'] = df[df['consistency_range'] == '1-2'].shape[0]
+    pie_data.at[1, 'count'] = df[df['consistency_range'] == '3-4'].shape[0]
+    pie_data.at[2, 'count'] = df[df['consistency_range'] == '5'].shape[0]
+    """ 
     pie_data = (
             df["consistency_range"]
             .value_counts()
@@ -425,6 +461,8 @@ with elements("chart_style"):
             .reset_index()
             .rename(columns={'index': 'range', 'consistency_range': 'count'})
         )
+    """
+    st.write(pie_data)
 
     pie_values = [{'name': row['range'], 'y': row['count']} for _, row in pie_data.iterrows()]
 
