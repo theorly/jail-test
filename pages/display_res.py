@@ -372,7 +372,7 @@ with elements("chart_jailbreak"):
                     'splitSeries': True
                 },
                 'maxSize': '100%',
-                'minSize': '20%',
+                'minSize': '40%',
                 'zMax': 1000,
                 'zMin': 0
             }
@@ -388,7 +388,7 @@ with elements("chart_jailbreak"):
     }
 
     # Visualizzazione in Streamlit (se il componente hg è installato)
-    hg.streamlit_highcharts(chartDef, 690)
+    hg.streamlit_highcharts(chartDef, 650)
 
 
 with elements("chart_style"):
@@ -593,7 +593,7 @@ La consistenza delle risposte è una metrica chiave per comprendere se il modell
         },
         "series": [
             {
-                "name": f"Style Consistency {col}",
+                "name": f"Consistency Score {col}",
                 "data": style_counts[col].tolist(),
             }
             for col in style_counts.columns
