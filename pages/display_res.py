@@ -417,8 +417,8 @@ with elements("chart_style"):
 
     # Dati per il grafico a torta (distribuzione degli intervalli)
 
-    try:
-        pie_data = (
+    
+    pie_data = (
             df["consistency_range"]
             .value_counts()
             .sort_index()
@@ -426,9 +426,7 @@ with elements("chart_style"):
             .rename(columns={"index": "range", "consistency_range": "count"})
         )
 
-        pie_values = [{"name": row["range"], "y": row["count"]} for _, row in pie_data.iterrows()]
-    except Exception as e:
-        st.error(e)
+    pie_values = [{"name": row["range"], "y": row["count"]} for _, row in pie_data.iterrows()]
 
 
     # Configurazione del grafico
