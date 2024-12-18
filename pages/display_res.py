@@ -423,10 +423,10 @@ with elements("chart_style"):
             .value_counts()
             .sort_index()
             .reset_index()
-            .rename(columns={"index": "range", "consistency_range": "count"})
+            .rename(columns={'index': 'range', 'consistency_range': 'count'})
         )
 
-    pie_values = [{"name": row["range"], "y": row["count"]} for _, row in pie_data.iterrows()]
+    pie_values = [{'name': row['range'], 'y': row['count']} for _, row in pie_data.iterrows()]
 
 
     # Configurazione del grafico
