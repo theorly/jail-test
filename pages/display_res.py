@@ -406,7 +406,7 @@ with elements("chart_style"):
     """)
 
      # Creazione di intervalli per la distribuzione
-    df["consistency_range"] = pd.cut(
+    df["style_consistency_range"] = pd.cut(
         df["style_consistency"], bins=[0, 2, 4, 5], labels=["1-2", "3-4", "5"]
     )
 
@@ -416,7 +416,7 @@ with elements("chart_style"):
     bar_values = bar_data["style_consistency"].tolist()
 
 
-    ###PROVA 
+
     # Calcolare il conteggio di style_consistency per ogni modello
     style_counts = df.groupby(["model_name", "style_consistency"]).size().unstack(fill_value=0)
 
@@ -441,7 +441,7 @@ with elements("chart_style"):
         ]
     }
 
-# Visualizzazione del grafico
+    # Visualizzazione del grafico
     hg.streamlit_highcharts(chartDef, 640)
 
 
@@ -450,19 +450,9 @@ with elements("chart_style"):
     pie_data = pd.DataFrame(columns=['range', 'count'])
     pie_data['range'] = ['1-2', '3-4', '5']
     pie_data['count'] = [0, 0, 0] # Inizializza tutti i valori a 0
-    pie_data.at[0, 'count'] = df[df['consistency_range'] == '1-2'].shape[0]
-    pie_data.at[1, 'count'] = df[df['consistency_range'] == '3-4'].shape[0]
-    pie_data.at[2, 'count'] = df[df['consistency_range'] == '5'].shape[0]
-    """ 
-    pie_data = (
-            df["consistency_range"]
-            .value_counts()
-            .sort_index()
-            .reset_index()
-            .rename(columns={'index': 'range', 'consistency_range': 'count'})
-        )
-    """
-    st.write(pie_data)
+    pie_data.at[0, 'count'] = df[df['style_consistency_range'] == '1-2'].shape[0]
+    pie_data.at[1, 'count'] = df[df['style_consistency_range'] == '3-4'].shape[0]
+    pie_data.at[2, 'count'] = df[df['style_consistency_range'] == '5'].shape[0]
 
     pie_values = [{'name': row['range'], 'y': row['count']} for _, row in pie_data.iterrows()]
 
@@ -586,19 +576,46 @@ La consistenza delle risposte è una metrica chiave per comprendere se il modell
         df["consistency"], bins=[0, 2, 4, 5], labels=["1-2", "3-4", "5"]
     )
 
+    # Calcolare il conteggio di style_consistency per ogni modello
+    style_counts = df.groupby(["model_name", "consistency"]).size().unstack(fill_value=0)
+
+    # Creazione della definizione del grafico
+    chartDef = {
+        "chart": {"type": "column"},
+        "title": {"text": "Distribution of Consistency per Model"},
+        "xAxis": {
+            "categories": style_counts.index.tolist(),
+            "title": {"text": "Model Name"}
+        },
+        "yAxis": {
+            "min": 0,
+            "title": {"text": "Count"}
+        },
+        "series": [
+            {
+                "name": f"Style Consistency {col}",
+                "data": style_counts[col].tolist(),
+            }
+            for col in style_counts.columns
+        ]
+    }
+
+    # Visualizzazione del grafico
+    hg.streamlit_highcharts(chartDef, 640)
+
     # Dati per il grafico a barre (media di style_consistency per modello)
     bar_data = df.groupby("model_name")["consistency"].mean().reset_index()
     categories = bar_data["model_name"].tolist()
     bar_values = bar_data["consistency"].tolist()
 
     # Dati per il grafico a torta (distribuzione degli intervalli)
-    pie_data = (
-        df["consistency_range"]
-        .value_counts()
-        .sort_index()
-        .reset_index()
-        .rename(columns={"index": "range", "consistency_range": "count"})
-    )
+    pie_data = pd.DataFrame(columns=['range', 'count'])
+    pie_data['range'] = ['1-2', '3-4', '5']
+    pie_data['count'] = [0, 0, 0] # Inizializza tutti i valori a 0
+    pie_data.at[0, 'count'] = df[df['consistency_range'] == '1-2'].shape[0]
+    pie_data.at[1, 'count'] = df[df['consistency_range'] == '3-4'].shape[0]
+    pie_data.at[2, 'count'] = df[df['consistency_range'] == '5'].shape[0]
+
     pie_values = [{"name": row["range"], "y": row["count"]} for _, row in pie_data.iterrows()]
 
     # Configurazione del grafico
@@ -638,7 +655,6 @@ La consistenza delle risposte è una metrica chiave per comprendere se il modell
 
     # Visualizzazione del grafico con streamlit_highcharts
     hg.streamlit_highcharts(chart_style, height=540)
-
     
       # Raggruppiamo per model_name e jail_prompt_id e calcoliamo la media di style_consistency per ogni gruppo
     df_grouped = df.groupby(['model_name', 'jail_prompt_id'])['consistency'].mean().reset_index()
