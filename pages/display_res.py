@@ -416,18 +416,20 @@ with elements("chart_style"):
     bar_values = bar_data["style_consistency"].tolist()
 
     # Dati per il grafico a torta (distribuzione degli intervalli)
-    pie_data = pd.DataFrame(df["consistency_range"].value_counts().sort_index()).reset_index()
-    pie_data.columns = ["range", "count"]
-    pie_data = (
-        df["consistency_range"]
-        .value_counts()
-        .sort_index()
-        .reset_index()
-        .rename(columns={"index": "range", "consistency_range": "count"})
-    )
 
-    st.write(pie_data)
-    pie_values = [{"name": row["range"], "y": row["count"]} for _, row in pie_data.iterrows()]
+    try:
+        pie_data = (
+            df["consistency_range"]
+            .value_counts()
+            .sort_index()
+            .reset_index()
+            .rename(columns={"index": "range", "consistency_range": "count"})
+        )
+
+        pie_values = [{"name": row["range"], "y": row["count"]} for _, row in pie_data.iterrows()]
+    except Exception as e:
+        st.error(e)
+
 
     # Configurazione del grafico
     chart_style = {
