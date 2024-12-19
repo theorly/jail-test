@@ -21,12 +21,14 @@ Questa combinazione di visualizzazioni permette di ottenere insight approfonditi
 
 #results_folder = '/home/site/wwwroot/responses/analysis'
 results_folder = 'results/analysis'
+nojail_results_folder = 'results/analysis/no_jailbreak'
 jail_example_1 = 'results/examples/jail_example_1.json'
 no_jail_example_1 = 'results/examples/no_jail_example_1.json'
 jail_example_2 = 'results/examples/jail_example_2.json'
 no_jail_example_2 = 'results/examples/no_jail_example_2.json'
 jail_example_3 = 'results/examples/jail_example_3.json'
 no_jail_example_3 = 'results/examples/no_jail_example_3.json'
+only_nojail_example = 'results/examples/nojail_one.json'
 
 def load_json_data(folder_path):
     data = [] 
@@ -49,6 +51,42 @@ def load_json_data(folder_path):
                                     'jail_prompt_id': content.get('jail_prompt_id', ''),
                                     'req_id': content.get('req_id', ''),
                                     'jailbreak_success': content.get('jailbreak_success', False),
+                                    'style_consistency': content.get('style_consistency', 0),
+                                    'consistency': content.get('consistency', 0),
+                                    'disclaimer': content.get('disclaimer', False),
+                                    'severity': content.get('severity', 0),
+                                    'note': content.get('note', '')
+                                })
+                            except json.JSONDecodeError:
+                                print(f"Errore nel decodificare il JSON in 'content' per il file {filename}.")
+                        else:
+                            print(f"Contenuto vuoto in 'content' per il file {filename}.")
+                except json.JSONDecodeError:
+                    print(f"Errore nel caricare il file {filename}. Il file potrebbe non essere un JSON valido.")
+    
+    df = pd.DataFrame(data)
+    return df
+
+def load_json_nojail(folder_path):
+    data = [] 
+    for filename in os.listdir(folder_path):
+        if filename.endswith(".json"):
+            file_path = os.path.join(folder_path, filename)
+            
+            with open(file_path, 'r', encoding='utf-8') as file:
+                try:
+                    response = json.load(file)  # Legge il JSON principale
+                    
+                    for entry in response:  # Itera sugli oggetti all'interno del file JSON
+                        content_str = entry.get("content", "")
+                        
+                        if content_str:  # Decodifica il JSON interno nella chiave "content"
+                            try:
+                                content = json.loads(content_str)  # Converte la stringa JSON in oggetto
+                                data.append({
+                                    'model_name': content.get('model_name', ''),
+                                    'req_id': content.get('req_id', ''),
+                                    'response': content.get('response', ''),
                                     'style_consistency': content.get('style_consistency', 0),
                                     'consistency': content.get('consistency', 0),
                                     'disclaimer': content.get('disclaimer', False),
@@ -1046,8 +1084,115 @@ with elements("jail_vs_nojail"):
 
     st.markdown("""### 10. Comparison of Metrics between Jailbreak and No Jailbreak""")
 
-    st.markdown("""**# Jailbreak Success vs Consistenza (Non Jailbroken)**""")
-    st.markdown(""" In risposte jailbroken, ci si aspetta una alta consistenza. In risposte non jailbroken, la consistenza dovrebbe essere bassa, in quanto il modello non sta cercando di evitare o manipolare la richiesta.""")
+    df_nojail = load_json_nojail(nojail_results_folder)
+    st.markdown(f"**Numero di record: {len(df_nojail)}**")
+    st.dataframe(df_nojail, width=1000, height=300, hide_index=True)
+
+    st.markdown("""**La sola richiesta evasa in modo consistente è la seguente:**""")
+  
+    ex = load(only_nojail_example)
+    display_chat(ex, 'box3')
+    st.divider()
+    
+    st.markdown("""**# Jailbreak Success vs Response (Non Jailbroken)**""")
+    st.markdown("""Aggregare i valori di jailbreak_success per ciascun jail_prompt_id calcolando la media consente di ottenere un unico valore rappresentativo per ogni combinazione di model_name e req_id. Successivamente, puoi confrontare questo valore con i dati del dataframe df_nojail. """)
+    
+    # 1. Aggrega df per calcolare la media di jailbreak_success per ogni model_name e req_id
+    df_agg = df.groupby(['model_name', 'req_id']).agg(
+        avg_jailbreak_success=('jailbreak_success', 'mean')  # Media su tutti i jail_prompt_id
+    ).reset_index()
+
+    # 2. Effettua il merge con df_nojail
+    merged_df = pd.merge(df_agg, df_nojail, on=['model_name', 'req_id'], how='inner')
+
+    # 3. Calcola la differenza tra la media di jailbreak_success e response
+    merged_df['success_difference'] = merged_df['avg_jailbreak_success'] - merged_df['response'].astype(int)
+
+    # 4. Crea la tabella pivot per la heatmap
+    pivot_table = merged_df.pivot_table(
+        index='model_name', columns='req_id', values='success_difference', aggfunc='mean'
+    )
+
+    # 5. Visualizza la heatmap
+    plt.figure(figsize=(12, 8))
+    sns.heatmap(pivot_table, annot=True, cmap='coolwarm', cbar_kws={'label': 'Differenza (Media Jailbreak - Response)'})
+    plt.title("Heatmap delle Differenze tra Media Jailbreak Success e Response")
+    plt.ylabel("Model Name")
+    plt.xlabel("Request ID")
+    st.pyplot(plt)
+
+    st.markdown("""**# Jailbreak Consistency vs NoJail Consistency**""")
+    st.markdown(""" In risposte jailbroken, ci si aspetta una alta consistenza. In risposte non jailbroken, la consistenza dovrebbe essere bassa, in quanto il modello non sta cercando di evitare o manipolare la richiesta.                       """)
+    st.markdown("""**N.B. La grandezza dei punti dipende dal valore di severity**""")
+   # Aggrega df per calcolare la media di consistency per ogni model_name e req_id
+    df_agg_consistency = df.groupby(['model_name', 'req_id']).agg(
+        avg_consistency=('consistency', 'mean')  # Media su tutti i jail_prompt_id
+    ).reset_index()
+
+    # Merge con df_nojail
+    merged_consistency = pd.merge(
+        df_agg_consistency, 
+        df_nojail[['model_name', 'req_id', 'consistency', 'severity']].rename(columns={'consistency': 'nojail_consistency'}), 
+        on=['model_name', 'req_id']
+    )
+
+    # Genera una serie separata per ogni model_name
+    series_data = []
+    unique_models = merged_consistency['model_name'].unique()
+
+    # Funzione per mappare la severity alla dimensione dei punti
+    def map_severity_to_size(severity):
+        #return 10 + severity * 5  # Scala la dimensione tra 10 e 35 (ad esempio)
+        return severity 
+
+    for model in unique_models:
+        model_data = merged_consistency[merged_consistency['model_name'] == model]
+        scatter_data = [
+            {
+                "x": row["avg_consistency"], 
+                "y": row["nojail_consistency"], 
+                "name": f"{row['model_name']} (req_id: {row['req_id']})",
+                "marker": {
+                    "radius": map_severity_to_size(row["severity"])  # Imposta la dimensione del punto
+                }
+            } 
+            for _, row in model_data.iterrows()
+        ]
+        series_data.append({
+            "name": model,
+            "data": scatter_data
+        })
+
+    # Configurazione del grafico Highcharts
+    scatter_chart = {
+        "chart": {
+            "type": "scatter",
+            "zoomType": "xy"
+        },
+        "title": {
+            "text": "Consistency Correlation (Jailbreak vs No Jailbreak)"
+        },
+        "xAxis": {
+            "title": {
+                "text": "Average Consistency (Jailbreak)"
+            }
+        },
+        "yAxis": {
+            "title": {
+                "text": "Consistency (No Jailbreak)"
+            }
+        },
+        "tooltip": {
+            "headerFormat": "<b>{point.name}</b><br>",
+            "pointFormat": "Jailbreak Consistency: {point.x}, No Jailbreak Consistency: {point.y}<br>Severity: {point.marker.radius}"
+        },
+        "series": series_data
+    }
+
+    # Visualizza il grafico in Streamlit
+    hg.streamlit_highcharts(scatter_chart, height=550)
+
+
 
 
     st.markdown("""**# Confronto della Coerenza dello Stile (Style Consistency)**""")
