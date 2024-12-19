@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from streamlit_elements import elements, mui, nivo, dashboard
 import streamlit_highcharts as hg
+import numpy as np
 
 
 st.subheader("Results")
@@ -1096,7 +1097,8 @@ with elements("jail_vs_nojail"):
     
     st.markdown("""**# Jailbreak Success vs Response (Non Jailbroken)**""")
     st.markdown("""Aggregare i valori di jailbreak_success per ciascun jail_prompt_id calcolando la media consente di ottenere un unico valore rappresentativo per ogni combinazione di model_name e req_id. Successivamente, puoi confrontare questo valore con i dati del dataframe df_nojail. """)
-    
+
+        ###SPIEGARE BENE CHE VIENE EFFETTUATA LA MEDIA DI JAILBREAK_SUCCESS PER CIASCUN JAILBREAK_PROMPT E POI VIENE FATTO IL CONFRONTO TRA JAIL_SUCCESS_MEDIO E RESPONSE PER OGNI MODEL E REQ_ID
     # 1. Aggrega df per calcolare la media di jailbreak_success per ogni model_name e req_id
     df_agg = df.groupby(['model_name', 'req_id']).agg(
         avg_jailbreak_success=('jailbreak_success', 'mean')  # Media su tutti i jail_prompt_id
@@ -1199,6 +1201,93 @@ with elements("jail_vs_nojail"):
     st.markdown("""Risposte jailbroken potrebbero mostrare più flessibilità nel seguire lo stile, o potrebbero esserci delle difficoltà nel mantenere uno stile coerente se il modello è distratto da tentativi di evasione.
 Risposte non jailbroken potrebbero avere uno stile più neutro e coerente, a meno che non venga richiesto uno stile specifico dal prompt.""")
     
+    # Uniamo i dati di df e df_nojail
+    df_merged_style = pd.merge(
+        df[['model_name', 'req_id', 'style_consistency']].rename(columns={'style_consistency': 'jailbreak_style_consistency'}),
+        df_nojail[['model_name', 'req_id', 'style_consistency']].rename(columns={'style_consistency': 'nojail_style_consistency'}),
+        on=['model_name', 'req_id']
+    )
+
+    # Creiamo un dataframe lungo per il violin plot
+    melted_df = pd.melt(df_merged_style, id_vars=['model_name', 'req_id'], value_vars=['jailbreak_style_consistency', 'nojail_style_consistency'],
+                        var_name='Scenario', value_name='style_consistency')
+
+    # Creiamo il violin plot
+    plt.figure(figsize=(12, 8))
+    sns.violinplot(x='model_name', y='style_consistency', hue='Scenario', data=melted_df, split=True, inner="quart", palette="muted", fill = False, gap = .2)
+    
+    # Aggiungiamo il titolo e le etichette
+    plt.title('Confronto della Style Consistency tra Jailbreak e NoJailbreak')
+    plt.xlabel('Model Name')
+    plt.ylabel('Style Consistency')
+
+    # Mostriamo il grafico in Streamlit
+    st.pyplot(plt)
+
+    # interattivo
+    # Aggrega df per calcolare la media di style_consistency per ogni model_name e req_id
+    df_agg_style_consistency = df.groupby(['model_name', 'req_id']).agg(
+        avg_style_consistency=('style_consistency', 'mean')  # Media su tutti i jail_prompt_id
+    ).reset_index()
+
+    # Merge con df_nojail
+    merged_style_consistency = pd.merge(
+        df_agg_style_consistency, 
+        df_nojail[['model_name', 'req_id', 'style_consistency']].rename(columns={'style_consistency': 'nojail_style_consistency'}), 
+        on=['model_name', 'req_id']
+    )
+
+    # Genera una serie separata per ogni model_name
+    series_data = []
+    unique_models = merged_style_consistency['model_name'].unique()
+
+    for model in unique_models:
+        model_data = merged_style_consistency[merged_style_consistency['model_name'] == model]
+        scatter_data = [
+            {
+                "x": row["avg_style_consistency"], 
+                "y": row["nojail_style_consistency"], 
+                "name": f"{row['model_name']} (req_id: {row['req_id']})"
+            } 
+            for _, row in model_data.iterrows()
+        ]
+        series_data.append({
+            "name": model,
+            "data": scatter_data
+        })
+
+    # Configurazione del grafico Highcharts
+    style_consistency_chart = {
+        "chart": {
+            "type": "scatter",
+            "zoomType": "xy"
+        },
+        "title": {
+            "text": "Style Consistency Comparison (Jailbreak vs No Jailbreak)"
+        },
+        "xAxis": {
+            "title": {
+                "text": "Average Style Consistency (Jailbreak)"
+            }
+        },
+        "yAxis": {
+            "title": {
+                "text": "Style Consistency (No Jailbreak)"
+            }
+        },
+        "tooltip": {
+            "headerFormat": "<b>{point.name}</b><br>",
+            "pointFormat": "Jailbreak Style Consistency: {point.x}, No Jailbreak Style Consistency: {point.y}"
+        },
+        "series": series_data
+    }
+
+    # Visualizza il grafico in Streamlit
+    hg.streamlit_highcharts(style_consistency_chart, height=550)
+
+
+
+
     st.markdown("""**# Confronto dei Disclaimer**""")
 
     st.markdown("""**# Confronto della Severità della Risposta (Severity)**""")
