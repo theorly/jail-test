@@ -577,8 +577,7 @@ with elements("chart_style"):
     # Grafico 2: Distribuzione Aderenza allo Stile
     st.markdown("""#### 3. Style Consistency""")  
     st.markdown("""**Descrizione**:  
-    -Un grafico che rappresenta la distribuzione dei punteggi assegnati all'aderenza allo stile richiesto dai prompt.  
-    -Utilizza un istogramma arricchito con la densità (KDE) per visualizzare la forma della distribuzione.                      
+    -Un grafico che rappresenta la distribuzione dei punteggi assegnati all'aderenza allo stile richiesto dai prompt.                     
     **Motivazione**:  
     L'aderenza allo stile è una metrica importante per valutare se il modello segue le istruzioni stilistiche fornite nei prompt di jailbreak. Una distribuzione ben definita può indicare coerenza nelle risposte.                
     **Cosa Mostra**:  
@@ -743,7 +742,7 @@ with elements("chart_style"):
 with elements("chart_consistency"):
     st.markdown("""### 4. Consistency Score""")
     st.markdown("""**Descrizione**:  
--Questo grafico rappresenta la distribuzione dei punteggi di consistenza, ovvero la capacità del modello di rispondere direttamente alla richiesta senza essere evasivo.             
+-Questa sezione rappresenta la distribuzione dei punteggi di consistenza, ovvero la capacità del modello di rispondere alla richiesta senza essere evasivo.             
 **Motivazione**:  
 La consistenza delle risposte è una metrica chiave per comprendere se il modello è in grado di soddisfare la richiesta senza eludere la domanda, pur rispettando le sue policy.             
 **Cosa Mostra**:  
@@ -1045,8 +1044,7 @@ with elements("chart_severity"):
 with elements("chart_disclaimer"):
     st.markdown("""### 6. Disclaimer""") 
     st.markdown("""**Descrizione**:  
-              - Confronta la presenza di disclaimer nelle risposte (`True`/`False`) per ciascun modello.  
-              - Ogni barra rappresenta il conteggio di risposte con o senza disclaimer per un modello specifico.                                      
+              - Confronta la presenza di disclaimer nelle risposte (`True`/`False`) per ciascun modello.                                        
               **Motivazione**:  
               I disclaimer sono un indicatore di responsabilità etica, mostrando come i modelli cercano di prevenire potenziali danni.                             
               **Cosa Mostra**:  
