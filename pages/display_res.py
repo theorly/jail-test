@@ -12,7 +12,23 @@ import numpy as np
 st.subheader("Results")
 
 st.markdown("**Results of the experiments will be displayed here.** \n")
-st.markdown("""L'obiettivo principale di questo lavoro è quello di mostrare gli effetti del jailbreak sui modelli di linguaggio di grandi dimensioni (LLM), mettendo in luce come tali tecniche possano essere utilizzate per aggirare le policy di sicurezza dei modelli. Analizzando questi comportamenti, possiamo ottenere una comprensione più approfondita delle vulnerabilità e delle aree che necessitano di miglioramenti per garantire una maggiore robustezza e sicurezza. """)
+st.markdown("""Il fenomeno del jailbreaking nei modelli di linguaggio di grandi dimensioni (LLM) è un campo di studio emergente che esplora le capacità di questi modelli di eludere o aggirare le loro politiche di sicurezza e moderazione.                        
+            Il presente lavoro di ricerca si concentra sull'analisi del comportamento di vari LLM, tra cui GPT-3.5, Gemini, Claude 3.5, Vicuna, Qwen, Llama, Gemma2, Mistral-nemo, e Phi3, rispetto a una serie di prompt di jailbreak.                         
+            L’obiettivo è indagare come i modelli rispondono a tentativi di jailbreak, con particolare attenzione alla loro consapevolezza del fenomeno e alla consistenza delle loro risposte. """)
+
+st.markdown("""Nel contesto del presente studio, sono stati raccolti circa 30 prompt di jailbreak e 20 richieste contro le policy di ciascun modello. 
+            Ogni modello è stato interrogato automaticamente prima con il prompt di jailbreak e successivamente con la richiesta di violazione delle policy.                        
+            Le risposte sono state salvate in file .json, contenenti sia le risposte ai prompt di jailbreak che quelle alle richieste successive.
+""")
+
+st.markdown("""Per ogni chat salvata, i dati sono stati successivamente analizzati e classificati utilizzando il modello GPT-3.5-Turbo sulla base di sei metriche fondamentali:          
+- Jailbreak Success: Successo o fallimento nel bypassare le policy di sicurezza.
+- Response: Se il modello ha risposto alla richiesta o meno.
+- Consistency: Coerenza della risposta, valutata su una scala da 1 a 5.
+- Style Consistency: Adattamento dello stile della risposta richiesto dal prompt di jailbreak, anch'esso valutato su una scala da 1 a 5.
+- Disclaimer: Presenza di note etiche nelle risposte.
+- Severity: Gravità della risposta, classificata su una scala da 1 a 5.) """) 
+
 st.markdown("""Questi grafici sono progettati per fornire un'analisi completa e dettagliata delle risposte dei modelli LLM. I grafici evidenziano:  
 1. **Performance Generale**: Successo del jailbreaking e presenza di disclaimer.  
 2. **Qualità delle Risposte**: Aderenza, consistenza e gravità.  
@@ -1669,3 +1685,24 @@ $$\t{Adaptability Score} = \t{Style Consistency}_{\t{jailbroken}} - \t{Style Con
     sns.heatmap(correlation_matrix, annot=True, cmap='crest', fmt='.2f', linewidths=0.5)
     plt.title('Matrice di Correlazione tra le Metriche')
     st.pyplot(plt)
+
+
+with elements("conclusions"):
+    st.markdown("""### 12. Conclusioni""")
+ 
+    st.markdown("""Durante l’analisi, è emersa una dinamica interessante che ha mostrato comportamenti contrastanti per lo stesso prompt di jailbreak.                         
+                In alcune iterazioni, lo stesso modello ha classificato il successo del jailbreak come True, mentre in altre lo ha classificato come False. Questo fenomeno può essere ricondotto a diversi fattori:
+
+- Contesto Variabile nelle Risposte: I modelli di linguaggio come GPT-3.5 non sono completamente deterministici e possono fornire risposte diverse anche a prompt identici, a causa di fattori come la variabilità nel processo di generazione del linguaggio. La stessa richiesta potrebbe portare a risposte differenti in base alle sfumature contestuali in cui viene generata la risposta.
+
+- Stochasticità del Modello: La non deterministicità dei modelli LLM implica che una risposta possa cambiare anche quando il prompt rimane invariato. Questo rende difficile ottenere una valutazione costante di un fenomeno complesso come il jailbreak.
+
+- Politiche di Moderazione e Consapevolezza: La variabilità nelle risposte potrebbe anche essere il risultato di aggiornamenti nelle politiche di moderazione del modello o di modifiche nel suo comportamento nel tempo. Un modello può quindi essere in grado di riconoscere un tentativo di jailbreak in un contesto e non in un altro, a causa della sua capacità di evolvere e adattarsi ai tentativi di eludere le sue policy.
+
+""")
+    
+    st.markdown("""Questo comportamento è particolarmente interessante poiché riflette l'interazione tra la progettazione del modello, le sue politiche di moderazione e la capacità di riconoscere tentativi di manipolazione.                 
+                L'analisi suggerisce che i modelli di linguaggio, pur essendo estremamente avanzati, non sono ancora perfettamente equipaggiati per rilevare e gestire in modo coerente i tentativi di jailbreak,
+                indicando che potrebbero essere necessari ulteriori miglioramenti nelle loro capacità di consapevolezza e risposta ai fenomeni di elusione.
+
+""")
