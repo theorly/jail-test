@@ -52,6 +52,7 @@ def load_json_data(folder_path):
                                     'jail_prompt_id': content.get('jail_prompt_id', ''),
                                     'req_id': content.get('req_id', ''),
                                     'jailbreak_success': content.get('jailbreak_success', False),
+                                    'response': content.get('response', ''),
                                     'style_consistency': content.get('style_consistency', 0),
                                     'consistency': content.get('consistency', 0),
                                     'disclaimer': content.get('disclaimer', False),
@@ -428,6 +429,147 @@ with elements("chart_jailbreak"):
 
     # Visualizzazione in Streamlit (se il componente hg è installato)
     hg.streamlit_highcharts(chartDef, 650)
+
+
+with elements("response_charts"):
+    st.markdown("""### 2.1. Response e Jailbreak Success""")
+    st.markdown("""**Descrizione**:""") 
+    st.markdown("""In questa sezione si analizza la distribuzione delle richieste evase con successo per ciascun modello. In particolare si vuole evidenziare la percentuale delle risposte evase in presenza di successi di jailbreak.""") 
+    
+
+    #PERCENTUALE DI RESPONSE TRUE SU JAIL TRUE TOTALE 
+    # Filtra i dati in cui jailbreak_success è True
+    df_filtered = df[df['jailbreak_success'] == True]
+
+    # Calcola la percentuale di Response = True
+    response_true = df_filtered['response'].sum()
+    total_success = len(df_filtered)
+    percentage_response_true = (response_true / total_success) * 100
+
+    # Prepara i dati per il grafico
+    chart_data = {
+        'chart': {
+            'type': 'pie'
+        },
+        'title': {
+            'text': 'Percentuale di Response True rispetto a Jailbreak Success'
+        },
+        'series': [{
+            'name': 'Response',
+            'data': [
+                {'name': 'Response True', 'y': percentage_response_true},
+                {'name': 'Response False', 'y': 100 - percentage_response_true}
+            ]
+        }]
+    }
+
+    # Visualizza il grafico
+    hg.streamlit_highcharts(chart_data)
+    
+    # Filtra il dataframe per response=True e jailbreak_success=True
+    filtered_df = df[(df["response"] == True) & (df["jailbreak_success"] == True)]
+
+    # Calcola la distribuzione per ciascun model_name
+    distribution = filtered_df["model_name"].value_counts().reset_index()
+    distribution.columns = ["model_name", "count"]
+
+    # Lista di colori distinti per ciascun model_name
+    colors = ["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd"]  # Puoi aggiungere altri colori
+    model_names = distribution["model_name"].tolist()
+
+    # Associa ogni model_name a un colore specifico (assicurati che i colori siano abbastanza per tutti i model_names)
+    color_map = {model_name: colors[i % len(colors)] for i, model_name in enumerate(model_names)}
+
+    # Crea una lista di serie con colori distinti per il primo grafico (distribuzione per model_name)
+    series_data_1 = [
+        {
+            "name": row["model_name"],
+            "data": [row["count"]],
+            "color": color_map[row["model_name"]],  # Usa il colore associato
+        }
+        for i, row in distribution.iterrows()
+    ]
+
+    # Configura il primo grafico
+    chart_data_1 = {
+        "chart": {"type": "column"},
+        "title": {"text": "Occorrenze di richieste evase con jailbreak per ciascun modello"},
+        "xAxis": {"categories": ["Response True & Jailbreak Success"], "title": {"text": "Criterio"}},
+        "yAxis": {"title": {"text": "Occorrenze"}},
+        "series": series_data_1,
+        "legend": {"layout": "vertical", "align": "right", "verticalAlign": "middle"},
+    }
+
+    
+    #st.write("Grafico interattivo:")
+    hg.streamlit_highcharts(chart_data_1, 450)
+
+    # Conta le occorrenze per ciascun jail_prompt_id e model_name
+    grouped_df = filtered_df.groupby(["jail_prompt_id", "model_name"]).size().reset_index(name="count")
+
+    # Converte esplicitamente i valori in tipo int per evitare problemi di serializzazione
+    grouped_df["count"] = grouped_df["count"].astype(int)  # Assicura che 'count' sia int
+
+    # Ordina correttamente i jail_prompt_id numericamente
+    grouped_df["jail_prompt_id_num"] = grouped_df["jail_prompt_id"].str.extract('(\d+)').astype(int)
+    grouped_df = grouped_df.sort_values("jail_prompt_id_num")
+
+    # Lista di jail_prompt_id e model_name
+    jail_prompt_ids = grouped_df["jail_prompt_id"].unique().tolist()
+    model_names = grouped_df["model_name"].unique().tolist()
+
+    # Crea una serie per ciascun model_name con dati per ogni jail_prompt_id
+    series_data_2 = [
+        {
+            "name": model,
+            "data": [
+                int(grouped_df[(grouped_df["jail_prompt_id"] == jail_prompt_id) & (grouped_df["model_name"] == model)]["count"].sum())
+                if jail_prompt_id in grouped_df["jail_prompt_id"].values else 0
+                for jail_prompt_id in jail_prompt_ids
+            ],
+            "color": color_map[model],  # Usa il colore associato al model_name
+        }
+        for model in model_names
+    ]
+
+    # Configura il secondo grafico
+    chart_data_2 = {
+        "chart": {
+            "type": "column",
+            "zoomType": "x",  # Permette lo zoom sull'asse X
+        },
+        "title": {"text": "Distribuzione per ciascun Jailbreak_Prompt e Modello"},
+        "xAxis": {
+            "categories": jail_prompt_ids,
+            "title": {"text": "Jail Prompt ID"},
+            "min": 0,
+            "max": len(jail_prompt_ids) - 1,
+            "tickInterval": 1,  # Intervallo tra le etichette
+            "type": "category"  # Forza il tipo di dato a categoria per evitare errori con i valori numerici
+        },
+        "yAxis": {"title": {"text": "Occorrenze"}},
+        "series": series_data_2,
+        "legend": {
+            "layout": "horizontal",  # Dispone la legenda orizzontalmente
+            "align": "center",  # Centra la legenda
+            "verticalAlign": "bottom",  # Posiziona la legenda in basso
+            "x": 0,  # Allinea orizzontalmente
+            "y": 10,  # Distanza dalla parte inferiore
+        },
+        "tooltip": {"shared": True},
+        "plotOptions": {
+            "column": {
+                "dataLabels": {"enabled": True}
+            }
+        },
+    }
+
+    # Visualizza il secondo grafico
+    #st.write("Grafico interattivo per Jail Prompt ID:")
+    hg.streamlit_highcharts(chart_data_2, 700)
+
+
+
 
 
 with elements("chart_style"):
@@ -1290,9 +1432,241 @@ Risposte non jailbroken potrebbero avere uno stile più neutro e coerente, a men
 
     st.markdown("""**# Confronto dei Disclaimer**""")
 
+   # Conteggio di True e False per Disclaimer in df
+    df_disclaimer_counts = df['disclaimer'].value_counts()
+
+    # Conteggio di True e False per Disclaimer in df_nojail
+    df_nojail_disclaimer_counts = df_nojail['disclaimer'].value_counts()
+
+    # Visualizzazione in un grafico a barre
+    labels = ['True', 'False']
+    df_disclaimer_percentage = df_disclaimer_counts / df.shape[0] * 100
+    df_nojail_disclaimer_percentage = df_nojail_disclaimer_counts / df_nojail.shape[0] * 100
+
+    fig, ax = plt.subplots(figsize=(8, 6))
+
+    # Grafico a barre
+    width = 0.35  # larghezza delle barre
+    x = range(len(labels))
+    ax.bar(x, df_disclaimer_percentage, width, label='Jailbreak', color='lightblue')
+    ax.bar([p + width for p in x], df_nojail_disclaimer_percentage, width, label='No Jailbreak', color='salmon')
+
+    ax.set_xticks([p + width / 2 for p in x])
+    ax.set_xticklabels(labels)
+    ax.set_ylabel('Percentage (%)')
+    ax.set_title('Comparison of Disclaimer (True/False)')
+
+    ax.legend()
+    st.pyplot(fig)
+
+
     st.markdown("""**# Confronto della Severità della Risposta (Severity)**""")
+
+    # Calcolare la severity media per ciascun model_name in df
+    df_severity_mean = df.groupby('model_name')['severity'].mean()
+
+    # Calcolare la severity media per ciascun model_name in df_nojail
+    df_nojail_severity_mean = df_nojail.groupby('model_name')['severity'].mean()
+
+    # Unire i due DataFrame in un unico per confronto
+    severity_comparison = pd.DataFrame({
+        'jail_severity': df_severity_mean,
+        'nojail_severity': df_nojail_severity_mean
+    }).fillna(0)
+
+    severity_comparison.reset_index(inplace=True)
+
+    # Creare una lista di colori distintivi per ciascun model_name
+    colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf']
+
+    # Creare il grafico con streamlit_highcharts
+    activity_charts = {
+        'chart': {
+            'type': 'column',
+            'height': '60%'
+        },
+        'title': {
+            'text': 'Average Severity Comparison by Model Name'
+        },
+        'xAxis': {
+            'categories': severity_comparison['model_name'].tolist(),
+            'title': {
+                'text': 'Model Name'
+            }
+        },
+        'yAxis': {
+            'min': 0,
+            'title': {
+                'text': 'Average Severity',
+                'align': 'high'
+            },
+            'labels': {
+                'overflow': 'justify'
+            }
+        },
+        'series': [
+            {
+                'name': 'Jailbreak',
+                'data': severity_comparison['jail_severity'].tolist(),
+                'color': colors[0],
+            },
+            {
+                'name': 'No Jailbreak',
+                'data': severity_comparison['nojail_severity'].tolist(),
+                'color': colors[1],
+            }
+        ],
+        'tooltip': {
+            'shared': True,
+            'valueSuffix': ' severity'
+        }
+    }
+
+    # Visualizzare il grafico
+    hg.streamlit_highcharts(activity_charts, 400)
 
     st.markdown("""**# Costruzione di Metriche Derivate**""")
     st.markdown(""" Si possono anche creare alcune metriche derivate che confrontano in modo più diretto le risposte jailbroken con quelle non jailbroken:                      
 - **Jailbreak Impact Score:** La differenza tra la severità e la consistenza delle risposte jailbroken vs non jailbroken.                               
 - **Adaptability Score:** La differenza tra l'aderenza allo stile (style consistency) nelle risposte jailbroken e non jailbroken.""")
+    
+    st.markdown("""**0. Calcolo del Jailbreak Impact Score**""")
+    st.markdown("""Il Jailbreak Impact Score può essere definito come la differenza tra la severità e la consistenza delle risposte jailbroken rispetto a quelle non jailbroken. Questo ti permetterà di vedere quanto il jailbreaking influisce sulla gravità e sulla coerenza delle risposte.                         
+                La formula per calcolare il **Jailbreak Impact Score** è:                   """)
+    st.markdown("""                    
+$$\t{Jailbreak Impact Score} = (\t{Severity}_{\t{jailbroken}} - \t{Consistency}_{\t{jailbroken}}) - (\t{Severity}_{\t{non jailbroken}} - \t{Consistency}_{\t{non jailbroken}})$$
+""")
+    st.markdown("""**1. Cosa Misura il Jailbreak Impact Score?**""") 
+    st.markdown("""Il Jailbreak Impact Score calcola la differenza tra l'impatto del jailbreaking e le caratteristiche delle risposte non jailbroken in base a due parametri chiave:
+
+- Severity: Misura la gravità della risposta, dove un punteggio più alto indica una risposta più grave.                       
+- Consistency: Misura quanto la risposta è aderente alla richiesta specifica, con punteggi più alti che indicano una risposta più consistente.                   
+In sostanza, il Jailbreak Impact Score cerca di rispondere alla domanda: In che modo il jailbreaking influisce sulla gravità e sulla coerenza delle risposte?""")
+
+    st.markdown("""**2. Interpretazione di un Jailbreak Impact Score Positivo o Negativo**""")
+    st.markdown("""- Se il Jailbreak Impact Score è positivo significa che le risposte jailbroken hanno una maggiore differenza (positiva) tra severità e coerenza rispetto alle risposte non jailbroken.
+In altre parole, il jailbreaking potrebbe aver reso le risposte più gravi o meno coerenti rispetto a quelle non jailbroken.
+Un punteggio positivo suggerisce che il jailbreaking ha un impatto maggiore sulla severità e sulla coerenza delle risposte rispetto al modello che non è jailbroken.              
+- Se il Jailbreak Impact Score è negativo significa che la differenza tra severità e coerenza nelle risposte jailbroken è inferiore rispetto alle risposte non jailbroken.
+In altre parole, le risposte non jailbroken potrebbero essere più gravi o più coerenti, mentre le risposte jailbroken potrebbero risultare meno gravi o più coerenti.
+Un punteggio negativo implica che il jailbreaking ha avuto un minore impatto sulla gravità e sulla coerenza delle risposte rispetto al comportamento non jailbroken.""")
+
+
+    st.markdown("""**0. Calcolo dell'Adaptability Score**""")
+    st.markdown("""L'Adaptability Score potrebbe essere calcolato come la differenza tra l'aderenza allo stile nelle risposte jailbroken e non jailbroken. Questo ti permetterà di capire come la capacità di adattarsi allo stile richiesto cambia tra le risposte jailbroken e non jailbroken.                                
+                La formula per calcolare l'**Adaptability Score** è:                    """)     
+    st.markdown("""                       
+$$\t{Adaptability Score} = \t{Style Consistency}_{\t{jailbroken}} - \t{Style Consistency}_{\t{non jailbroken}}$$
+""")
+
+    st.markdown("""**1. Cosa Misura l'Adaptability Score?**""")
+    st.markdown("""L'Adaptability Score calcola la differenza tra la coerenza stilistica (style consistency) nelle risposte jailbroken e non jailbroken.                   
+    - Style Consistency: Misura quanto la risposta si adatti allo stile definito dal prompt o dalle aspettative. Un punteggio più alto indica che la risposta è più aderente allo stile richiesto.                       
+    Quindi, l'Adaptability Score cerca di rispondere alla domanda: In che modo il jailbreaking influisce sulla capacità del modello di mantenere uno stile coerente nelle risposte?""")
+
+    st.markdown("""**2. Interpretazione di un Adaptability Score Positivo o Negativo**""")
+    st.markdown("""- Se l'Adaptability Score è positivo significa che il modello jailbroken ha una migliore coerenza stilistica rispetto al modello non jailbroken.
+    In altre parole, le risposte jailbroken sono più aderenti allo stile richiesto rispetto alle risposte non jailbroken.
+    Un punteggio positivo suggerisce che il jailbreaking ha migliorato l'adattabilità stilistica del modello.           """)
+    st.markdown("""                
+    - Se l'Adaptability Score è negativo significa che il modello non jailbroken ha una migliore coerenza stilistica rispetto al modello jailbroken.
+    Le risposte non jailbroken sono più aderenti allo stile rispetto alle risposte jailbroken.
+    Un punteggio negativo implica che il jailbreaking ha ridotto l'adattabilità stilistica del modello.""")
+
+
+
+
+
+    # Calcolare la severità e la consistenza media per ciascun model_name e per ciascun tipo di risposta (jailbroken vs non jailbroken)
+    df_jail = df[df['jailbreak_success'] == True]
+    df_nojail = df_nojail
+
+    # Severità media per le risposte jailbroken e non jailbroken
+    df_jail_severity_mean = df_jail.groupby('model_name')['severity'].mean()
+    df_nojail_severity_mean = df_nojail.groupby('model_name')['severity'].mean()
+
+    # Consistenza media per le risposte jailbroken e non jailbroken
+    df_jail_consistency_mean = df_jail.groupby('model_name')['consistency'].mean()
+    df_nojail_consistency_mean = df_nojail.groupby('model_name')['consistency'].mean()
+
+    # Style Consistency per le risposte jailbroken e non jailbroken
+    df_jail_style_consistency_mean = df_jail.groupby('model_name')['style_consistency'].mean()
+    df_nojail_style_consistency_mean = df_nojail.groupby('model_name')['style_consistency'].mean()
+
+    # Calcolare i Jailbreak Impact Score e Adaptability Score
+    jailbreak_impact_score = (df_jail_severity_mean - df_jail_consistency_mean) - (df_nojail_severity_mean - df_nojail_consistency_mean)
+    adaptability_score = df_jail_style_consistency_mean - df_nojail_style_consistency_mean
+
+    # Creare un DataFrame per visualizzare i risultati
+    scores_df = pd.DataFrame({
+        'model_name': df_jail_severity_mean.index,
+        'Jailbreak Impact Score': jailbreak_impact_score,
+        'Adaptability Score': adaptability_score
+    })
+
+    # Visualizzazione dei risultati con streamlit_highcharts
+    activity_charts = {
+        'chart': {
+            'type': 'column',
+            'height': '60%'
+        },
+        'title': {
+            'text': 'Jailbreak Impact and Adaptability Scores by Model'
+        },
+        'xAxis': {
+            'categories': scores_df['model_name'].tolist(),
+            'title': {
+                'text': 'Model Name'
+            }
+        },
+        'yAxis': {
+            'min': 0,
+            'title': {
+                'text': 'Score',
+                'align': 'high'
+            },
+            'labels': {
+                'overflow': 'justify'
+            }
+        },
+        'series': [
+            {
+                'name': 'Jailbreak Impact Score',
+                'data': scores_df['Jailbreak Impact Score'].tolist(),
+                'color': '#FF6347',  # Tomato Red for Jailbreak Impact Score
+            },
+            {
+                'name': 'Adaptability Score',
+                'data': scores_df['Adaptability Score'].tolist(),
+                'color': '#4682B4',  # Steel Blue for Adaptability Score
+            }
+        ],
+        'tooltip': {
+            'shared': True,
+            'valueSuffix': ' score'
+        }
+    }
+
+    # Visualizzare il grafico
+    hg.streamlit_highcharts(activity_charts, 400)
+
+    
+    # Assumiamo che i dataframe df e df_nojail siano già esistenti e siano stati uniti in df_combined
+    # Esempio di combinazione dei dati: uniamo i dataframe df e df_nojail in un unico dataframe (assicurati che abbiano le colonne comuni)
+    df_combined = pd.merge(df, df_nojail, on="req_id", how="inner", suffixes=('_jail', '_nojail'))
+
+    # Calcolare le metriche Jailbreak Impact Score e Adaptability Score
+    # Jailbreak Impact Score = (Severity_jailbroken - Consistency_jailbroken) - (Severity_nojail - Consistency_nojail)
+    df_combined['jailbreak_impact_score'] = (df_combined['severity_jail'] - df_combined['consistency_jail']) - (df_combined['severity_nojail'] - df_combined['consistency_nojail'])
+
+    # Adaptability Score = Style Consistency_jailbroken - Style Consistency_nojail
+    df_combined['adaptability_score'] = df_combined['style_consistency_jail'] - df_combined['style_consistency_nojail']
+
+    # Calcoliamo la matrice di correlazione
+    correlation_matrix = df_combined[['jailbreak_impact_score', 'adaptability_score', 'severity_jail', 'style_consistency_jail']].corr()
+
+    # Creiamo la heatmap
+    plt.figure(figsize=(8, 6))
+    sns.heatmap(correlation_matrix, annot=True, cmap='crest', fmt='.2f', linewidths=0.5)
+    plt.title('Matrice di Correlazione tra le Metriche')
+    st.pyplot(plt)
