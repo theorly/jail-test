@@ -1525,7 +1525,7 @@ Risposte non jailbroken potrebbero avere uno stile più neutro e coerente, a men
     # Visualizzare il grafico
     hg.streamlit_highcharts(activity_charts, 400)
 
-    st.markdown("""**# Costruzione di Metriche Derivate**""")
+    st.markdown("""### 11. Costruzione di Metriche Derivate""")
     st.markdown(""" Si possono anche creare alcune metriche derivate che confrontano in modo più diretto le risposte jailbroken con quelle non jailbroken:                      
 - **Jailbreak Impact Score:** La differenza tra la severità e la consistenza delle risposte jailbroken vs non jailbroken.                               
 - **Adaptability Score:** La differenza tra l'aderenza allo stile (style consistency) nelle risposte jailbroken e non jailbroken.""")
@@ -1552,19 +1552,19 @@ In altre parole, le risposte non jailbroken potrebbero essere più gravi o più 
 Un punteggio negativo implica che il jailbreaking ha avuto un minore impatto sulla gravità e sulla coerenza delle risposte rispetto al comportamento non jailbroken.""")
 
 
-    st.markdown("""**0. Calcolo dell'Adaptability Score**""")
+    st.markdown("""**3. Calcolo dell'Adaptability Score**""")
     st.markdown("""L'Adaptability Score potrebbe essere calcolato come la differenza tra l'aderenza allo stile nelle risposte jailbroken e non jailbroken. Questo ti permetterà di capire come la capacità di adattarsi allo stile richiesto cambia tra le risposte jailbroken e non jailbroken.                                
                 La formula per calcolare l'**Adaptability Score** è:                    """)     
     st.markdown("""                       
 $$\t{Adaptability Score} = \t{Style Consistency}_{\t{jailbroken}} - \t{Style Consistency}_{\t{non jailbroken}}$$
 """)
 
-    st.markdown("""**1. Cosa Misura l'Adaptability Score?**""")
+    st.markdown("""**4. Cosa Misura l'Adaptability Score?**""")
     st.markdown("""L'Adaptability Score calcola la differenza tra la coerenza stilistica (style consistency) nelle risposte jailbroken e non jailbroken.                   
     - Style Consistency: Misura quanto la risposta si adatti allo stile definito dal prompt o dalle aspettative. Un punteggio più alto indica che la risposta è più aderente allo stile richiesto.                       
     Quindi, l'Adaptability Score cerca di rispondere alla domanda: In che modo il jailbreaking influisce sulla capacità del modello di mantenere uno stile coerente nelle risposte?""")
 
-    st.markdown("""**2. Interpretazione di un Adaptability Score Positivo o Negativo**""")
+    st.markdown("""**5. Interpretazione di un Adaptability Score Positivo o Negativo**""")
     st.markdown("""- Se l'Adaptability Score è positivo significa che il modello jailbroken ha una migliore coerenza stilistica rispetto al modello non jailbroken.
     In altre parole, le risposte jailbroken sono più aderenti allo stile richiesto rispetto alle risposte non jailbroken.
     Un punteggio positivo suggerisce che il jailbreaking ha migliorato l'adattabilità stilistica del modello.           """)
@@ -1650,7 +1650,8 @@ $$\t{Adaptability Score} = \t{Style Consistency}_{\t{jailbroken}} - \t{Style Con
     # Visualizzare il grafico
     hg.streamlit_highcharts(activity_charts, 400)
 
-    
+    st.markdown("""**6. Matrice di Correlazione tra le Metriche**""")
+
     # Assumiamo che i dataframe df e df_nojail siano già esistenti e siano stati uniti in df_combined
     # Esempio di combinazione dei dati: uniamo i dataframe df e df_nojail in un unico dataframe (assicurati che abbiano le colonne comuni)
     df_combined = pd.merge(df, df_nojail, on="req_id", how="inner", suffixes=('_jail', '_nojail'))
