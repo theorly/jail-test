@@ -1687,22 +1687,47 @@ $$\t{Adaptability Score} = \t{Style Consistency}_{\t{jailbroken}} - \t{Style Con
     st.pyplot(plt)
 
 
-with elements("conclusions"):
-    st.markdown("""### 12. Conclusioni""")
- 
-    st.markdown("""Durante l’analisi, è emersa una dinamica interessante che ha mostrato comportamenti contrastanti per lo stesso prompt di jailbreak.                         
-                In alcune iterazioni, lo stesso modello ha classificato il successo del jailbreak come True, mentre in altre lo ha classificato come False. Questo fenomeno può essere ricondotto a diversi fattori:
-
-- Contesto Variabile nelle Risposte: I modelli di linguaggio come GPT-3.5 non sono completamente deterministici e possono fornire risposte diverse anche a prompt identici, a causa di fattori come la variabilità nel processo di generazione del linguaggio. La stessa richiesta potrebbe portare a risposte differenti in base alle sfumature contestuali in cui viene generata la risposta.
-
-- Stochasticità del Modello: La non deterministicità dei modelli LLM implica che una risposta possa cambiare anche quando il prompt rimane invariato. Questo rende difficile ottenere una valutazione costante di un fenomeno complesso come il jailbreak.
-
-- Politiche di Moderazione e Consapevolezza: La variabilità nelle risposte potrebbe anche essere il risultato di aggiornamenti nelle politiche di moderazione del modello o di modifiche nel suo comportamento nel tempo. Un modello può quindi essere in grado di riconoscere un tentativo di jailbreak in un contesto e non in un altro, a causa della sua capacità di evolvere e adattarsi ai tentativi di eludere le sue policy.
-
-""")
     
-    st.markdown("""Questo comportamento è particolarmente interessante poiché riflette l'interazione tra la progettazione del modello, le sue politiche di moderazione e la capacità di riconoscere tentativi di manipolazione.                 
-                L'analisi suggerisce che i modelli di linguaggio, pur essendo estremamente avanzati, non sono ancora perfettamente equipaggiati per rilevare e gestire in modo coerente i tentativi di jailbreak,
-                indicando che potrebbero essere necessari ulteriori miglioramenti nelle loro capacità di consapevolezza e risposta ai fenomeni di elusione.
+with elements("conclusions"): 
+    st.markdown("""### 12. Conclusioni""")
+    st.markdown("""
+
+L'analisi condotta sui modelli di linguaggio di grandi dimensioni (LLM) ha evidenziato diverse caratteristiche legate al fenomeno del jailbreak, mostrando comportamenti distintivi tra i modelli e fornendo indicazioni utili sul loro livello di sicurezza e resilienza.
+
+**Consapevolezza del Fenomeno di Jailbreaking**            
+Uno degli aspetti principali emersi riguarda l'incapacità dei modelli di classificare correttamente gli esperimenti relativi alla metrica "jailbreak-success". Nello specifico, i modelli non sono sempre in grado di riconoscere in modo sistematico quando hanno subito un jailbreak. Questo limite evidenzia una mancanza di "consapevolezza" intrinseca del fenomeno e pone interrogativi sulla robustezza dei modelli rispetto a queste tipologie di attacchi.
+
+**Resilienza dei Modelli**              
+Tra i modelli analizzati, **Claude** si distingue come il più resistente e resiliente ai tentativi di jailbreak, dimostrando una maggiore capacità di mantenere l'aderenza alle policy stabilite. Al contrario, **Gemini** e **Gemma** sono risultati particolarmente vulnerabili, mostrando una maggiore frequenza di fallimenti di fronte ai tentativi di jailbreak.
+
+**Variabilità delle Risposte**             
+Un aspetto significativo emerso è la variabilità nelle risposte dei modelli allo stesso prompt di jailbreak tra diverse iterazioni. Questo fenomeno può essere attribuito a diversi fattori, tra cui:
+1. **Variabilità intrinseca nei modelli**: modelli di linguaggio come GPT-3.5 non sono completamente deterministici e possono fornire risposte diverse anche a prompt identici, a causa di fattori come la variabilità nel processo di generazione del linguaggio. La stessa richiesta potrebbe portare a risposte differenti in base alle sfumature contestuali in cui viene generata la risposta.
+2. **Stocasticità**: la non deterministicità dei modelli LLM implica che una risposta possa cambiare anche quando il prompt rimane invariato. Questo rende difficile ottenere una valutazione costante di un fenomeno complesso come il jailbreak.
+3. **Aggiornamenti delle policy**: la variabilità nelle risposte potrebbe anche essere il risultato di aggiornamenti nelle politiche di moderazione del modello o di modifiche nel suo comportamento nel tempo. Un modello può quindi essere in grado di riconoscere un tentativo di jailbreak in un contesto e non in un altro, a causa della sua capacità di evolvere e adattarsi ai tentativi di eludere le sue policy.
+
+**Risposte alle Richieste Post-Jailbreaking**               
+In generale, i modelli non rispondono alle richieste mirate ad aggirare le policy, coerentemente con gli obiettivi di sicurezza. Tuttavia, a seguito dell'esecuzione di un prompt di jailbreak, i modelli tendono a esaudire e rispondere all'input dell'utente, suggerendo una vulnerabilità intrinseca al contesto di jailbreak.
+
+**Consistenza e Aderenza Stilistica**                   
+Nella maggior parte dei casi in cui i modelli rispondono, le risposte risultano:
+- **Consistenti**: aderenti alla richiesta specifica dell'utente.
+- **Conformi allo stile richiesto**: rispecchiando fedelmente lo stile imposto dal prompt di jailbreak.
+Questi risultati indicano un'elevata capacità dei modelli di adattarsi alle richieste formulate nei prompt, nonostante le policy predefinite.
+
+**Gravita delle Risposte**               
+La **severity media** è risultata elevata. Ciò è attribuibile al fatto che quasi tutte le richieste sottoposte vengono classificate dai modelli come gravi. Questa classificazione riflette una tendenza conservativa nel giudicare i contenuti sensibili, probabilmente voluta per prevenire comportamenti non etici o inappropriati.
+
+**Presenza di Disclaimer**                  
+Un altro aspetto rilevante riguarda la **frequente presenza di disclaimer** nelle risposte. La maggioranza dei modelli include avvisi o note etiche, sottolineando l'attenzione posta dalle aziende nello sviluppo di LLM sicuri e responsabili.
+
+**Conclusioni**                
+I risultati dell'analisi mettono in luce diversi aspetti critici e punti di forza dei modelli di linguaggio:
+- La mancata consapevolezza del fenomeno di jailbreak rappresenta una vulnerabilità comune a tutti i modelli analizzati.
+- Vi è una forte variabilità tra i modelli in termini di resilienza, con Claude che emerge come il modello più robusto e Gemini e Gemma come i più vulnerabili.
+- La variabilità nelle risposte sottolinea l'importanza di considerare fattori come la stocasticità e gli aggiornamenti delle policy nei test di sicurezza.
+- La coerenza delle risposte e l'aderenza stilistica, unite all'elevata severità attribuita alle richieste e alla presenza di disclaimer, evidenziano un equilibrio tra adattabilità e precauzione nei modelli.
+
+Questi risultati offrono spunti significativi per il miglioramento della sicurezza e della robustezza degli LLM, contribuendo al progresso verso sistemi di intelligenza artificiale più resilienti e affidabili.
 
 """)
