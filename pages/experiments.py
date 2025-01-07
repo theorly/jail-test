@@ -27,10 +27,10 @@ genai.configure(api_key=GEMINI_API_KEY)
 # def paths 
 filepath_jailbreak = 'prompts/jail_prompts.xlsx'
 filepath_nojailbreak = 'prompts/requests_new.xlsx'
-#folder_to_zip = '/home/site/wwwroot/responses'
-folder_to_zip = '/Users/orlando/Desktop/Tesi/TEST/jail-test/results/'
+folder_to_zip = '/home/site/wwwroot/responses'
+#folder_to_zip = '/Users/orlando/Desktop/Tesi/TEST/jail-test/results/'
 #output_dir = '/home/site/wwwroot/responses'  # Percorso all'interno del container
-output_dir = '/Users/orlando/Desktop/Tesi/TEST/jail-test/results/'
+#output_dir = '/Users/orlando/Desktop/Tesi/TEST/jail-test/results/'
 df_jailbreak = utils.file_to_dataframe(filepath_jailbreak)
 df_nojailbreak = utils.file_to_dataframe(filepath_nojailbreak) 
 
@@ -124,6 +124,7 @@ def zip_folder(folder_path):
 def save_response_to_json(response, prompt_type ,prompt_id, model_name, jail_prompt='#'):
     # Crea una cartella per salvare i file JSON, se non esiste
     current_time = datetime.now()
+    #output_dir = f"{folder_to_zip}/exp_{current_time.year}_{current_time.month}_{current_time.day}"
     os.makedirs(output_dir, exist_ok=True)
 
     # Crea un nome file unico basato sul modello e sul prompt
@@ -485,4 +486,9 @@ with col2:
 st.divider()
 
 if button:
+    current_time = datetime.now()
+    if df_type:
+        output_dir = f"{folder_to_zip}/exp_{current_time.year}_{current_time.month}_{current_time.day}/folder_results"
+    else: 
+         output_dir = f"{folder_to_zip}/exp_{current_time.year}_{current_time.month}_{current_time.day}/folder_results/no_jailbreak"
     run_experiments(df_type, selected_data, selected_jail)
