@@ -31,10 +31,10 @@ pages = {
         st.Page("pages/experiments.py", title="Experiments", icon=":material/whatshot:"),
         #st.Page("pages/results_analysis.py", title="Analysis", icon=":material/output:"),
         st.Page("pages/analysis.py", title="Analysis", icon=":material/output:"),
+        st.Page("pages/display.py", title="Plot Results", icon=":material/analytics:"),
     ],
-    "Results": [
-        st.Page("pages/display_res.py", title="My Results", icon=":material/analytics:"),
-        st.Page("pages/display.py", title="Your Results", icon=":material/analytics:"),
+    "Orlando's Results": [
+        st.Page("pages/display_res.py", title="Results", icon=":material/analytics:"),
     ],
     "Info": [
         st.Page("pages/info.py", title="Info", icon=":material/info:")

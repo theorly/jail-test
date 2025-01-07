@@ -79,6 +79,16 @@
           "headline": "RESULTS ANALYSIS",
           "text": "<p>Once collected the results, they have to be analyzed.</p>"
         }
+      },
+      {
+        "start_date": {
+          "year": "2025",
+          "month":"01"
+        },
+        "text": {
+          "headline": "RESULTS ANALYSIS COMPLETED",
+          "text": "<p>Completed the analysis of results, and correctly plotted.</p>"
+        }
       }
     ]
 }
